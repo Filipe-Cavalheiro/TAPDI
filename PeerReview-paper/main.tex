@@ -1,0 +1,304 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+\usepackage{cleveref}
+\usepackage{pdflscape}
+\usepackage{array}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+\bibliographystyle{IEEEtran}
+
+\title{A Survey of Rural and Urban Road Identification via Satellite Imagery}
+
+\author{
+\IEEEauthorblockN{1\textsuperscript{st} Filipe Cavalheiro}
+\IEEEauthorblockA{
+\textit{DEEC} \\
+\textit{NOVA FCT} \\
+Lisbon, Portugal \\
+https://orcid.org/0009-0000-1238-3975}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Diogo Novais}
+\IEEEauthorblockA{
+\textit{DEEC} \\
+\textit{NOVA FCT} \\
+Lisbon, Portugal \\
+dm.novais@campus.fct.unl.pt}
+}
+
+\maketitle
+
+\begin{abstract}
+This paper surveys the principal methods used for detecting rural and urban roads from satellite imagery. Both heuristic techniques and modern data-driven approaches are discussed, highlighting their advantages, limitations, and applicability across different environments. It is also mentioned common benchmark datasets and performance metrics used to evaluate road extraction models.
+\end{abstract}
+
+\begin{IEEEkeywords}
+convolutional neural networks, remote sensing, road mapping, tropical forests, road extraction, benchmarks, machine learning
+\end{IEEEkeywords}
+
+\section{Introduction}
+Accurate and up-to-date road maps are essential for transportation planning, emergency response, and environmental monitoring. However, many regions—particularly in remote or developing areas—remain poorly mapped. Traditional mapping efforts are often slow, inconsistent, and difficult to scale.
+
+Recent advances in artificial intelligence, especially deep learning applied to high-resolution satellite imagery, have significantly improved the feasibility of automated road extraction. Nonetheless, many existing approaches focus primarily on well-structured urban environments, leaving irregular and sparsely maintained rural roads comparatively understudied.
+
+Several works demonstrate that convolutional neural networks (CNNs) can achieve strong performance across heterogeneous landscapes. For example, UNet and ResNet-based architectures trained on freely available datasets have achieved F1 scores between 72-81\% and Intersection over Union (IoU) scores between 43-58\%, even in semi-forested tropical regions \cite{rs16050839}. These results highlight the potential for scalable, automated road mapping across challenging environments.
+
+Furthermore, approximately 90\% of new road construction occurs in developing regions \cite{rs16050839}, underscoring the importance of accurate tools capable of detecting both formal and informal road networks.
+
+\section{Data Gathering}
+
+Accurate road extraction depends heavily on the quality, diversity, and resolution of the imagery used for training and evaluation. Modern approaches typically rely on a combination of publicly available satellite data, commercial high-resolution sensors, and crowdsourced annotations. This section summarizes the most commonly used sources and benchmark datasets in the literature.
+
+\subsection{Satellite and Aerial Imagery Sources}
+
+High-resolution satellite platforms provide detailed spectral and spatial information suitable for distinguishing between road surfaces, vegetation, and surrounding terrain. Commonly used sensors include:
+
+\begin{itemize}
+\item \textbf{IKONOS}: provides 1 m panchromatic and 4 m multispectral imagery. \cite{JIN2005257}
+\item \textbf{QuickBird}: offers black and white 61 centimeter resolution and 2.44-1.63 meter multispectral resolution imagery, used mostly for urban road extraction studies. (reentered Earth after orbit decay in 2015 \cite{QuickBird2} \cite{QuickBird2_wiki}) \cite{JIN2005257} \cite{Wang18062015}
+\item \textbf{Pleiades-1A}: delivers 0.5 m spatial resolution, particularly useful for modeling complex urban road networks \cite{rs12182985}.
+\item \textbf{GeoEye}: another high-resolution commercial sensor often used for cross-sensor generalization experiments \cite{rs12182985}.
+\item \textbf{TerraSAR-X}: a radar (SAR) satellite dataset that supports road extraction in cloudy, forested, or low-visibility environments \cite{8447237}.
+\end{itemize}
+
+In addition to satellite data, very-high-resolution imagery from \textbf{unmanned aerial vehicles (UAVs)} has gained popularity. UAV imagery typically ranges from a few centimeters to tens of centimeters per pixel and allows precise extraction of small rural or unpaved road segments \cite{8628717}.
+
+\subsection{Crowdsourced and Freely Accessible Annotation Sources}
+
+Reliable road annotations are essential for supervised learning. Two widely used sources are:
+
+\begin{itemize}
+\item \textbf{OpenStreetMap (OSM)} — A globally crowdsourced mapping platform frequently used to generate or refine road labels for training and benchmarking \cite{rs16050839} \cite{Wang18062015}.
+\item \textbf{Google Earth} — Provides multi-source RGB aerial and satellite images with varying resolutions. These images are often used for visual comparison and manual annotation \cite{7876793} \cite{Wang18062015}.
+\end{itemize} 
+
+\subsection{Benchmark Datasets}
+
+Several curated datasets have become standard benchmarks for evaluating road extraction models:
+
+\begin{itemize}
+\item \textbf{Massachusetts Roads Dataset}: Contains 1711 RGB images with 1-m spatial resolution at a size of 1500 x 1500 pixels, covering an area of 2.25 square kilometers. It is widely used for evaluating CNN-based and FCN-based approaches \cite{rs12091444} \cite{rs12182985}.
+\item \textbf{UAV-based Road Datasets}: Provide extremely high-resolution imagery for fine-grained road segmentation tasks, especially in rural or forested areas \cite{8628717}.
+\item \textbf{TerraSAR-X Road Dataset}: Used to test the robustness of algorithms under SAR imaging conditions, where optical cues are absent \cite{8447237}.
+\end{itemize}
+
+These datasets collectively cover diverse environmental conditions—from dense urban grids to remote rural and tropical regions—supporting the development of generalizable road extraction models.
+
+\section{Heuristic Methods}
+Early road extraction pipelines rely on handcrafted features such as texture analysis, morphological filtering, and edge detection. Although these methods can be computationally efficient, they typically struggle with complex or heterogeneous terrain.
+
+Texture-based progressive analysisand mathematical morphology techniques have been widely applied; however, they often fail to generalize across different road types, lighting conditions, or varying levels of vegetation. As a result, heuristic approaches are generally considered inferior \cite{rs12091444} to modern data-driven techniques for high-variability environments.
+
+In classical methods, roads are often first identified using shape and homogeneity cues. For curvilinear suburban roads, seeds can be selected from homogeneous segments and grouped using perceptual grouping theory. Additional structural cues are then extracted using multi-scale curvilinear detectors based on differential geometry \cite{JIN2005257}.
+
+\subsection{Road Extraction Workflow}
+Hough transforms are frequently used for detecting straight-line segments. The standard Hough transform operates on binary images, but extensions such as the Spatial Signature Weighted Hough Transform (SSWHT) improve robustness by incorporating local intensity signatures. The complete workflow is shown in Fig.~\ref{fig:JIN2005257_1} \cite{JIN2005257}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=4cm]{Images/JIN2005257_1.png}
+    \caption{Road extraction workflow \cite{JIN2005257}}
+    \label{fig:JIN2005257_1}
+\end{figure}
+
+\subsection{Preprocessing}
+Typical preprocessing steps include:
+\begin{itemize}
+    \item Morphological opening and closing operations \cite{JIN2005257}
+    \item Median filtering with a $7 \times 7$ kernel \cite{JIN2005257}
+    \item Masking using the Normalized Difference Vegetation Index (NDVI) \cite{JIN2005257}
+    \item Edge detection using the Nevatia–Babu operator, which provides sharper results than Sobel filters \cite{JIN2005257}
+\end{itemize}
+
+\section{Data-Driven Methods}
+Recent research increasingly favors data-driven approaches based on deep learning. Popular architectures include:
+\begin{itemize}
+    \item UNet \cite{rs16050839}
+    \item ResNet-34 and ResNet-34+ \cite{rs16050839}
+    \item Fully Convolutional Networks (FCN) \cite{rs12091444}
+    \item AlexNet-derived CNNs \cite{rs12091444}
+    \item Restricted Boltzmann Machines (RBMs) \cite{rs12091444}
+    \item Conditional Random Fields (CRFs) and Markov Random Fields (MRFs) for post-processing \cite{rs12091444}
+\end{itemize}
+
+ResNet-based models generally outperform UNet for rural road detection, achieving better spatial consistency and fewer false positives.
+
+The Segment Anything Model (SAM) has also been evaluated for overhead imagery, though its design favors instance segmentation rather than class-level segmentation such as road masks \cite{10483606}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=4cm]{Images/rs12091444_1.png}
+    \caption{Road extraction using data-driven techniques \cite{rs12091444}}
+    \label{fig:rs12091444_1}
+\end{figure}
+
+\subsection{Patch-Based CNN Models}
+"In the patch-based CNN model, the possibility of road dispensation is firstly predicted piece-by-
+piece with a particular stride and then the label map of the whole image is produced by assembling
+all of the label patches. Figure \ref{fig:rs12091444_2} illustrat"\cite{rs12091444}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=4cm]{Images/rs12091444_2.png}
+    \caption{General architecture of the patch-level CNNs model. architecture of the patch-level CNNs model. \cite{rs12091444}}
+    \label{fig:rs12091444_2}
+\end{figure}
+
+\begin{itemize}
+    \item CNN models \cite{7729406} \cite{YUAN2021114417} \cite{rs12101667}
+    \item Patch based models \cite{ALSHEHHI2017139}
+\end{itemize}
+
+\subsection{FCN Models}
+Fully Convolutional Networks improve spatial consistency but may still suffer from broken or incomplete road segments, especially in curved or occluded regions. Fig~\ref{fig:rs12091444_3}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=4cm]{Images/rs12091444_3.png}
+    \caption{General architecture of FCNs model \cite{rs12091444}}
+    \label{fig:rs12091444_3}
+\end{figure}
+
+\begin{itemize}
+    \item FCN \cite{8628717}
+    \item U-shaped FCN (UFCN) \cite{10.1117/1.JRS.12.016020}
+    \item SVM \cite{10.1117/1.JRS.12.016020}
+    \item FCN-8 \cite{8447237}
+\end{itemize}
+
+\subsection{Deconvolutional (DenseNet) Models}
+Deconvolutional architectures provide high spatial accuracy and produce smoother segmentation maps but require more computational resources and memory. Fig~\ref{fig:rs12091444_4}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=4cm]{Images/rs12091444_4.png}
+    \caption{General architecture of deconvolutional networ \cite{rs12091444}}
+    \label{fig:rs12091444_4}
+\end{figure}
+
+\begin{itemize}
+    \item modified deep encoder-decoder neural network \cite{10.1007/978-3-319-60663-7_18}
+    \item finite state machine (FSM) and DNN \cite{Wang18062015}
+    \item U-net CNN \cite{8605652}
+    \item deep residual U-net model \cite{8309343}
+    \item richer convolutional features (RCFs) \cite{8447193}
+    \item DenseUNet \cite{rs11212499}
+    \item Y-Net \cite{Li03042019}
+    \item cascaded end-to-end (CasNet) \cite{7873262}
+\end{itemize}
+
+\subsection{GAN-Based Models}
+Generative Adversarial Networks (GANs) offer robustness and can improve boundary sharpness, though they may encounter convergence issues on large or complex datasets. Fig~\ref{fig:rs12091444_5}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=4cm]{Images/rs12091444_5.png}
+    \caption{Generic architecture of GANs mod \cite{rs12091444}}
+    \label{fig:rs12091444_5}
+\end{figure}
+
+\begin{itemize}
+    \item dual-hot generative adversarial networks(DH-GAN) \cite{8265456}
+    \item GANs-UNet \cite{8628717}
+    \item GANs \cite{8106771}
+\end{itemize}
+
+\begin{landscape}
+\begin{table}[p]
+\caption{Strengths and limitations of various deep learning methods for road extraction.}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{p{4.5cm} p{6cm} p{6cm} p{6cm}}
+\hline
+\textbf{Approach} & \textbf{Complexity} & \textbf{Output} & \textbf{Smoothness} \\
+\hline
+
+GAN-based Models &
+Training instability; high complexity on large datasets &
+Robust outputs; learns fine boundary details &
+Capable of smooth and detailed segmentation \\
+
+\hline
+
+CNN-based Models &
+Fewer parameters; require large datasets; moderate computation &
+Weaker spatial consistency; pixel-level reasoning limitations &
+Often require post-processing for smooth boundaries \\
+
+\hline
+
+FCN-based Models &
+Limited adaptability for complex environments &
+Road connectivity issues; lower positional accuracy &
+Difficulty with curved-line smoothness \\
+
+\hline
+
+Deconvolutional Networks &
+High memory consumption; long training time &
+High spatial accuracy and robustness &
+Capable of generating smooth, continuous road masks \\
+
+\hline
+\end{tabular}
+\end{table}
+\end{landscape}
+
+\section{Error Measurement Methods}
+Common evaluation metrics include:
+
+\subsection{Mean Intersection over Union (mIoU)}
+\begin{equation}
+\frac{1}{N} \sum_{i=0}^{N}
+\frac{\text{Predicted Road} \cap \text{Known Road}}
+{\text{Predicted Road} \cup \text{Known Road}}
+\label{eq:mIoU}
+\end{equation}
+
+\subsection{F1 Score}
+\begin{equation}
+\frac{1}{N}\sum_{i=0}^{N}
+\frac{2 \times \text{Area of overlap}}{\text{Total Area}}
+\label{eq:F1_score}
+\end{equation}
+
+\subsection{Completeness}
+\begin{equation}
+\frac{\text{length of matched reference}}
+{\text{length of reference}}
+\label{eq:Completeness}
+\end{equation}
+
+\subsection{Correctness}
+\begin{equation}
+\frac{\text{length of matched extraction}}
+{\text{length of extraction}}
+\label{eq:Correctness}
+\end{equation}
+
+\subsection{Quality}
+\begin{equation}
+\frac{\text{length of matched extraction}}
+{\text{length of extraction} + \text{length of unmatched reference}}
+\label{eq:Quality}
+\end{equation}
+
+\subsection{Recall}
+\begin{equation}
+\frac{\text{True Positives}}
+{\text{True Positives} + \text{False Negatives}}
+\label{eq:Recall}
+\end{equation}
+
+\bibliography{references}
+\end{document}
