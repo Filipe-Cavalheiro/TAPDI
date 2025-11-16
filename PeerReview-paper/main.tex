@@ -55,6 +55,8 @@ Several works demonstrate that convolutional neural networks (CNNs) can achieve 
 
 Furthermore, approximately 90\% of new road construction occurs in developing regions \cite{rs16050839}, underscoring the importance of accurate tools capable of detecting both formal and informal road networks.
 
+When given multiple datasets for performance analysys the worst performing one is chosen from papers results.
+
 \section{Data Gathering}
 
 Accurate road extraction depends heavily on the quality, diversity, and resolution of the imagery used for training and evaluation. Modern approaches typically rely on a combination of publicly available satellite data, commercial high-resolution sensors, and crowdsourced annotations. This section summarizes the most commonly used sources and benchmark datasets in the literature.
@@ -65,7 +67,7 @@ High-resolution satellite platforms provide detailed spectral and spatial inform
 
 \begin{itemize}
 \item \textbf{IKONOS}: provides 1 m panchromatic and 4 m multispectral imagery. \cite{JIN2005257}
-\item \textbf{QuickBird}: offers black and white 61 centimeter resolution and 2.44-1.63 meter multispectral resolution imagery, used mostly for urban road extraction studies. (reentered Earth after orbit decay in 2015 \cite{QuickBird2} \cite{QuickBird2_wiki}) \cite{JIN2005257} \cite{Wang18062015}
+\item \textbf{QuickBird}: offers black and white 61 centimeter resolution and 2.44-1.63 meter multispectral resolution imagery, used mostly for urban road extraction studies. (reentered Earth after orbit decay in 2015 \cite{QuickBird2} \cite{QuickBird2_wiki} \cite{JIN2005257} \cite{Wang18062015}
 \item \textbf{Pleiades-1A}: delivers 0.5 m spatial resolution, particularly useful for modeling complex urban road networks \cite{rs12182985}.
 \item \textbf{GeoEye}: another high-resolution commercial sensor often used for cross-sensor generalization experiments \cite{rs12182985}.
 \item \textbf{TerraSAR-X}: a radar (SAR) satellite dataset that supports road extraction in cloudy, forested, or low-visibility environments \cite{8447237}.
@@ -87,7 +89,7 @@ Reliable road annotations are essential for supervised learning. Two widely used
 Several curated datasets have become standard benchmarks for evaluating road extraction models:
 
 \begin{itemize}
-\item \textbf{Massachusetts Roads Dataset}: Contains 1711 RGB images with 1-m spatial resolution at a size of 1500 x 1500 pixels, covering an area of 2.25 square kilometers. It is widely used for evaluating CNN-based and FCN-based approaches \cite{rs12091444} \cite{rs12182985}.
+\item \textbf{Massachusetts Roads Dataset}: Contains 1711 RGB images with 1-m spatial resolution at a size of 1500 x 1500 pixels, covering an area of 2.25 square kilometers. It is widely used for evaluating CNN-based and FCN-based approaches \cite{rs12091444} \cite{rs12182985} \cite{7729406}.
 \item \textbf{UAV-based Road Datasets}: Provide extremely high-resolution imagery for fine-grained road segmentation tasks, especially in rural or forested areas \cite{8628717}.
 \item \textbf{TerraSAR-X Road Dataset}: Used to test the robustness of algorithms under SAR imaging conditions, where optical cues are absent \cite{8447237}.
 \end{itemize}
@@ -121,17 +123,7 @@ Typical preprocessing steps include:
 \end{itemize}
 
 \section{Data-Driven Methods}
-Recent research increasingly favors data-driven approaches based on deep learning. Popular architectures include:
-\begin{itemize}
-    \item UNet \cite{rs16050839}
-    \item ResNet-34 and ResNet-34+ \cite{rs16050839}
-    \item Fully Convolutional Networks (FCN) \cite{rs12091444}
-    \item AlexNet-derived CNNs \cite{rs12091444}
-    \item Restricted Boltzmann Machines (RBMs) \cite{rs12091444}
-    \item Conditional Random Fields (CRFs) and Markov Random Fields (MRFs) for post-processing \cite{rs12091444}
-\end{itemize}
-
-ResNet-based models generally outperform UNet for rural road detection, achieving better spatial consistency and fewer false positives.
+Recent research increasingly favors data-driven approaches based on deep learning. 
 
 The Segment Anything Model (SAM) has also been evaluated for overhead imagery, though its design favors instance segmentation rather than class-level segmentation such as road masks \cite{10483606}.
 
@@ -155,8 +147,9 @@ all of the label patches. Figure \ref{fig:rs12091444_2} illustrat"\cite{rs120914
 \end{figure}
 
 \begin{itemize}
-    \item CNN models \cite{7729406} \cite{YUAN2021114417} \cite{rs12101667}
+    \item CNN models \cite{YUAN2021114417} \cite{rs12101667}
     \item Patch based models \cite{ALSHEHHI2017139}
+    \item RSRCNN \cite{7876793}
 \end{itemize}
 
 \subsection{FCN Models}
@@ -173,7 +166,11 @@ Fully Convolutional Networks improve spatial consistency but may still suffer fr
     \item FCN \cite{8628717}
     \item U-shaped FCN (UFCN) \cite{10.1117/1.JRS.12.016020}
     \item SVM \cite{10.1117/1.JRS.12.016020}
-    \item FCN-8 \cite{8447237}
+    \item FCN-8 \cite{8447237} \cite{7729406}
+    \item Enlarged FCN-4s \cite{7729406}
+    \item Pruned FCN-2s \cite{7729406}
+    \item Deep Residual U-Net \cite{8447237}
+    \item DeepLabv3+ \cite{8447237}
 \end{itemize}
 
 \subsection{Deconvolutional (DenseNet) Models}
@@ -252,10 +249,75 @@ Capable of generating smooth, continuous road masks \\
 \hline
 \end{tabular}
 \end{table}
+
+\begin{table}[p]
+\caption{Data Results of each method}
+\renewcommand{\arraystretch}{1.3}
+\begin{center}
+    
+
+\begin{tabular}{
+    p{1cm} 
+    p{2.8cm} 
+    >{\centering\arraybackslash}p{1.7cm}
+    >{\centering\arraybackslash}p{1.7cm}
+    >{\centering\arraybackslash}p{1.7cm}
+    >{\centering\arraybackslash}p{1.7cm}
+    >{\centering\arraybackslash}p{1.7cm}
+    >{\centering\arraybackslash}p{1.7cm}
+    >{\centering\arraybackslash}p{1.7cm}
+    >{\centering\arraybackslash}p{1.7cm}
+    >{\centering\arraybackslash}p{1.7cm}
+}
+\hline
+\textbf{Paper} & \textbf{Model} & \textbf{F1 Score~\eqref{eq:F1_score}} & \textbf{mIoU~\eqref{eq:mIoU}} & \textbf{Completeness~\eqref{eq:Completeness}} & \textbf{Correctness~\eqref{eq:Correctness}} & \textbf{Quality~\eqref{eq:Quality}} & \textbf{Recall~\eqref{eq:Recall}} & \textbf{IoU~\eqref{eq:IoU}} & \textbf{precision~\eqref{eq:precision}} & \textbf{accuracy~\eqref{eq:accuracy}} \\
+\hline
+& UNet & 72\% & 43\%&-&-&-&-&-& - & -\\
+\cite{rs16050839} & ResNet-24 & 81\% & 58\%&-&-&-&-&-& - & -\\
+& ResNet-24+ & 81\% & -&-&-&-&-&-& - & -\\
+\hline
+& Detector I & - & - & 81\% & 91\% & 75\% & - & -\\
+\cite{JIN2005257} & Fusion of two detectors & - & - & 84\% & 91\% & 78\% & - & -& - & -\\
+& Road tracking & - & - & 86\% & 92\% & 80\% & - & - & -\\
+\hline
+\cite{Wang18062015} & DNN + FSM & - & - & 78\% & 76\% & 70\% & - & - & - & -\\
+\hline
+& Softmax & 83.55\% & - & - & 81.08\% & - & - & 71.75\% & - & -\\
+\cite{rs12182985} & WBCE & 83.64\% & - & - & 81.43\% & - & - & 71.89\% & - & -\\
+& Dice+BCE & 84.41\% & - & - & 82.91\% & - & - & 73.02\% & - & -\\
+& Dice & 84.97\% & - & - & 83.63\% & - & - & 73.87\% & - & -\\
+\hline
+& FCN-8 & - & - & - & - & - & 66.56\% & 42.92\% & 54.72\% & -\\
+\cite{8447237} & Deep Res. U-Net & - & - & - & - & - & - & 27.31\% & - & -\\
+& DeepLabv3+ & - & - & - & - & - & - & 40.91\% & - & -\\
+\hline
+\cite{8628717} & FCN-32  & - & - & 74.2\% & 98.7\% & 85.8\% & - & - & - & -\\
+ & pix2pix (GAN) & - & - & 76.3\% & 100\% & 86.6\% & - & - & - & -\\
+\hline
+\cite{7876793} & RSRCNN  & 20.8\% & - & - & - & - & 61.3\% & - & 12.5\% & 70.9\%\\
+ & RSRCNN + road struct weight based & 66.2\% & - & - & - & - & 72.9\% & - & 60.6\% & 92.4\%\\
+\hline
+\cite{rs12091444} & A review paper on of itself\\
+\hline
+ & FCN-8s & - & 30\% & - & - & - & 49\% & - & 43\% & -\\
+\cite{7729406} & Enlarged FCN-4s & - & 52\% & - & - & - & 66\% & - & 71\% & -\\
+ & Pruned FCN-2s & - & 42\% & - & - & - & 61\% & - & 58\% & -\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
 \end{landscape}
 
 \section{Error Measurement Methods}
 Common evaluation metrics include:
+
+\subsection{F1 Score}
+\begin{equation}
+\frac{1}{N}\sum_{i=0}^{N}
+\frac{2 \times \text{Area of overlap}}{\text{Total Area}}
+\label{eq:F1_score}
+\end{equation}
 
 \subsection{Mean Intersection over Union (mIoU)}
 \begin{equation}
@@ -263,13 +325,6 @@ Common evaluation metrics include:
 \frac{\text{Predicted Road} \cap \text{Known Road}}
 {\text{Predicted Road} \cup \text{Known Road}}
 \label{eq:mIoU}
-\end{equation}
-
-\subsection{F1 Score}
-\begin{equation}
-\frac{1}{N}\sum_{i=0}^{N}
-\frac{2 \times \text{Area of overlap}}{\text{Total Area}}
-\label{eq:F1_score}
 \end{equation}
 
 \subsection{Completeness}
@@ -298,6 +353,27 @@ Common evaluation metrics include:
 \frac{\text{True Positives}}
 {\text{True Positives} + \text{False Negatives}}
 \label{eq:Recall}
+\end{equation}
+
+\subsection{IoU}
+\begin{equation}
+\frac{\text{True Positives}}
+{\text{True Positives} + \text{False Positives} + \text{True Negatives}}
+\label{eq:IoU}
+\end{equation}
+
+\subsection{precision}
+\begin{equation}
+\frac{\text{True Positives}}
+{\text{True Positives} + \text{False Positives}}
+\label{eq:precision}
+\end{equation}
+
+\subsection{accuracy}
+\begin{equation}
+\frac{\text{True Positives} + \text{True Negatives}}
+{\text{True Positives} + \text{False Positives} + \text{True Negatives} + \text{False Negatives}}
+\label{eq:accuracy}
 \end{equation}
 
 \bibliography{references}
