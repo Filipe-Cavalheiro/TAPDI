@@ -61,33 +61,31 @@ __kernel void sobel(int w, int h,
     int y = get_global_id(1);
     if (x >= w || y >= h) return;
 
-    uint4 pixel = read_imageui(imageIn, sampler, (int2)(x, y));
+    //uint4 pixel = read_imageui(imageIn, sampler, (int2)(x, y));
     
-    int idx = y * w + x;
-    imageOut[idx] = (uchar4)(pixel.x, pixel.y, pixel.z, pixel.w); 
-}
-/*     // Sobel kernels
-    int Gx[3][3] = {{-1, 0, 1},
-                    {-2, 0, 2},
-                    {-1, 0, 1}};
+    // Sobel kernels
+    int Gx[3][3] = {{1, 0, -1},
+                    {2, 0, -2},
+                    {1, 0, -1}};
     int Gy[3][3] = {{-1, -2, -1},
                     { 0,  0,  0},
                     { 1,  2,  1}};
 
-    float gx = 0.0f, gy = 0.0f;
+    uint4 gx = 0.0f, gy = 0.0f;
 
-    // Grayscale Sobel
     for (int i = -1; i <= 1; ++i) {
         for (int j = -1; j <= 1; ++j) {
-            float4 p = read_imagef(imageIn, sampler, (int2)(x + j, y + i));
-            float gray = 0.299f*p.x + 0.587f*p.y + 0.114f*p.z;
-            gx += gray * Gx[i+1][j+1];
-            gy += gray * Gy[i+1][j+1];
+            uint4 p = read_imageui(imageIn, sampler, (int2)(x + j, y + i));
+            gx += p * Gx[i+1][j+1];
+            gy += p * Gy[i+1][j+1];
         }
     }
 
-    float g = sqrt(gx*gx + gy*gy);
-    g = clamp(g, 0.0f, 1.0f);
-
+    float4 g = sqrt(convert_float4(gx*gx + gy*gy));
+    g = clamp(g, 0.0f, 255.0f);
+    uint4 g_uint = convert_uint4(g); 
+    
     int idx = y * w + x;
-    imageOut[idx] = (uchar4)(g * 255.0f, g * 255.0f, g * 255.0f, 255); */
+    imageOut[idx] = (uchar4)(g_uint.x, g_uint.y, g_uint.z, 255); 
+}
+   

@@ -16,7 +16,7 @@ def main():
         ctx = cl.Context(devices) # or dev_type=cl.device_type.ALL)
         global commQ
         commQ = cl.CommandQueue(ctx,device)
-        file = open("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP6\\prog.c","r")
+        file = open("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP6-7\\prog.c","r")
         global prog
         prog = cl.Program(ctx,file.read())
         prog.build()
@@ -72,7 +72,7 @@ def main():
     try:
         start_time = time.time()
         # === LOAD IMAGE ===
-        img = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP6\\Aula_4_files\\aula4-1.jpg")
+        img = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP6-7\\Aula_4_files\\aula4-1.jpg")
         
         img_rgba = cv.cvtColor(img, cv.COLOR_BGR2BGRA)
         h, w, c = img_rgba.shape
@@ -106,6 +106,7 @@ def main():
 
     except Exception as e:
         print("Error:", e)
+        
     """   
     # === LOAD IMAGE ===
     start_time = time.time()
