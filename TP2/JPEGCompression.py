@@ -73,7 +73,7 @@ def blockProcessing(imgChannelBlock,luminanceOrChrominance, compFactor):
 
 def main():
     COMPRESSION_PER =  30.0
-    img_BGR = cv.imread("./usb_32x32.png")
+    img_BGR = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP2\\usb_32x32.png")
     img_BGR = cv.cvtColor(img_BGR, cv.COLOR_BGR2RGB)
 
     img_YCrCb = cv.cvtColor(img_BGR, cv.COLOR_BGR2YCrCb)

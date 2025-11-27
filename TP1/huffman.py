@@ -67,7 +67,7 @@ def compress_img(huffman_dict):
     print(final_bit_str)
 
 def main():
-    img = cv.imread("./aula1.bmp", 0) 
+    img = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP1\\aula1.bmp", 0) 
     """ plt.imshow(img, cmap="gray")
     plt.show() """
 
