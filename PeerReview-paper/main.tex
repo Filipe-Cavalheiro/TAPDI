@@ -63,14 +63,13 @@ Accurate road extraction depends heavily on the quality, diversity, and resoluti
 
 \subsection{Satellite and Aerial Imagery Sources}
 
-High-resolution satellite platforms provide detailed spectral and spatial information suitable for distinguishing between road surfaces, vegetation, and surrounding terrain. Commonly used sensors include:
+High-resolution satellite platforms provide detailed spectral and spatial information suitable for distinguishing between road surfaces, vegetation, and surrounding terrain. Commonly used satellites include:
 
 \begin{itemize}
 \item \textbf{IKONOS}: provides 1 m panchromatic and 4 m multispectral imagery. \cite{JIN2005257}
 \item \textbf{QuickBird}: offers black and white 61 centimeter resolution and 2.44-1.63 meter multispectral resolution imagery, used mostly for urban road extraction studies. (reentered Earth after orbit decay in 2015 \cite{QuickBird2} \cite{QuickBird2_wiki}) \cite{JIN2005257} \cite{Wang18062015}
-\item \textbf{Pleiades-1A}: delivers 0.5 m spatial resolution, particularly useful for modeling complex urban road networks \cite{rs12182985}.
+\item \textbf{Pleiades-1A/1B}: delivers 0.5 m spatial resolution, particularly useful for modeling complex urban road networks \cite{rs12182985}.
 \item \textbf{GeoEye}: another high-resolution commercial sensor often used for cross-sensor generalization experiments \cite{rs12182985}.
-\item \textbf{TerraSAR-X}: a radar (SAR) satellite dataset that supports road extraction in cloudy, forested, or low-visibility environments \cite{8447237}.
 \end{itemize}
 
 In addition to satellite data, very-high-resolution imagery from \textbf{unmanned aerial vehicles (UAVs)} has gained popularity. UAV imagery typically ranges from a few centimeters to tens of centimeters per pixel and allows precise extraction of small rural or unpaved road segments \cite{8628717}.
@@ -99,7 +98,7 @@ These datasets collectively cover diverse environmental conditions—from dense 
 \section{Heuristic Methods}
 Early road extraction pipelines rely on handcrafted features such as texture analysis, morphological filtering, and edge detection. Although these methods can be computationally efficient, they typically struggle with complex or heterogeneous terrain.
 
-Texture-based progressive analysisand mathematical morphology techniques have been widely applied; however, they often fail to generalize across different road types, lighting conditions, or varying levels of vegetation. As a result, heuristic approaches are generally considered inferior \cite{rs12091444} to modern data-driven techniques for high-variability environments.
+Texture-based progressive analysis and mathematical morphology techniques have been widely applied; however, they often fail to generalize across different road types, lighting conditions, or varying levels of vegetation. As a result, heuristic approaches are generally considered inferior \cite{rs12091444} to modern data-driven techniques for high-variability environments.
 
 In classical methods, roads are often first identified using shape and homogeneity cues. For curvilinear suburban roads, seeds can be selected from homogeneous segments and grouped using perceptual grouping theory. Additional structural cues are then extracted using multi-scale curvilinear detectors based on differential geometry \cite{JIN2005257}.
 
