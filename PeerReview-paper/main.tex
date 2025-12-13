@@ -39,11 +39,11 @@
 \maketitle
 
 \begin{abstract}
-    This paper surveys the principal methods used for detecting rural and urban roads from satellite imagery. Both heuristic techniques and modern data-driven approaches are discussed, highlighting their advantages, limitations, and applicability across different environments. It is also mentioned common benchmark datasets and performance metrics used to evaluate road extraction models.
+    The automatic identification of road networks from satellite and aerial imagery has become a critical task for applications such as transportation planning, disaster response, and environmental monitoring, particularly in regions where cartographic data are incomplete or outdated. This paper presents a comprehensive survey of road extraction methods applied to both urban and rural environments, covering research published over the past decade. Modern data-driven techniques are reviewed. Particular emphasis is placed on convolutional neural networks, fully convolutional networks, encoder-decoder architectures, and generative adversarial networks, highlighting their respective strengths and limitations under varying environmental conditions. In addition, commonly used satellite sensors, annotation sources, benchmark datasets, and evaluation metrics are discussed to provide a unified perspective on experimental practices in the literature. By comparing reported results across a wide range of methods, this survey identifies prevailing trends in model performance and exposes challenges related to inconsistent evaluation protocols and dataset variability. The paper concludes by emphasizing the need for standardized benchmarks and evaluation frameworks to enable more reliable and meaningful comparisons between road extraction approaches.
 \end{abstract}
 
 \begin{IEEEkeywords}
-    convolutional neural networks, remote sensing, road mapping, tropical forests, road extraction, benchmarks, machine learning
+    Road extraction, satellite imagery, remote sensing, convolutional neural networks, deep learning, urban and rural road detection, semantic segmentation, benchmark datasets, evaluation metrics
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -54,21 +54,11 @@ mapping efforts are often slow, inconsistent, and difficult to scale.
 
 Recent advances in artificial intelligence, especially deep learning applied to
 high-resolution satellite imagery, have significantly improved the feasibility
-of automated road extraction. Nonetheless, many existing approaches focus
-primarily on well-structured urban environments, leaving irregular and sparsely
-maintained rural roads comparatively understudied.
+of automated road extraction. Being there implementations for urban and rural environments.
 
-Several works demonstrate that convolutional neural networks (CNNs) can achieve
-strong performance across heterogeneous landscapes. For example, UNet and
-ResNet-based architectures trained on freely available datasets have achieved
-F1 scores between 72-81\% and Intersection over Union (IoU) scores between
-43-58\%, even in semi-forested tropical regions \cite{rs16050839}. These
-results highlight the potential for scalable, automated road mapping across
-challenging environments.
+In this paper a total of 20 papers from the last 10 years have been analysised and compared with the intent to see any trends in more desirable architecture with this goal in mind.
 
-Furthermore, approximately 90\% of new road construction occurs in developing
-regions \cite{rs16050839}, underscoring the importance of accurate tools
-capable of detecting both formal and informal road networks.
+The paper is subdivided in 6 sections, the current one, observed methods for data gathering for training, testing and validation, heuristic methods, data driven methods, error calculation and conclusions.
 
 \section{Data Gathering}
 
@@ -129,10 +119,7 @@ urban grids to remote rural and tropical regions supporting the development of
 generalizable road extraction models.
 
 \section{Heuristic Methods}
-Early road extraction pipelines rely on handcrafted features such as texture
-analysis, morphological filtering, and edge detection. Although these methods
-can be computationally efficient, they typically struggle with complex or
-heterogeneous terrain.
+Early road extraction pipelines rely on handcrafted features such as texture analysis, morphological filtering, and edge detection. Although these methods are computationally efficient, they generally struggle when applied to complex or heterogeneous terrain. Consequently, heuristic-based approaches have seen a significant decline in usage in recent years. In this survey, only one representative study on heuristic methods is included, reflecting the authors' assessment that such approaches are largely obsolete and rarely adopted in contemporary road extraction research.
 
 Texture-based progressive analysis and mathematical morphology techniques have
 been widely applied; however, they often fail to generalize across different
@@ -145,13 +132,6 @@ homogeneity cues. For curvilinear suburban roads, seeds can be selected from
 homogeneous segments and grouped using perceptual grouping theory. Additional
 structural cues are then extracted using multi-scale curvilinear detectors
 based on differential geometry \cite{JIN2005257}.
-
-\subsection{Road Extraction Workflow}
-Hough transforms are frequently used for detecting straight-line segments. The
-standard Hough transform operates on binary images, but extensions such as the
-Spatial Signature Weighted Hough Transform (SSWHT) improve robustness by
-incorporating local intensity signatures. The complete workflow is shown in
-Fig.~\cref{fig:JIN2005257_1} \cite{JIN2005257}.
 
 \begin{figure}[t]
     \centering
@@ -171,9 +151,15 @@ Typical preprocessing steps include:
           than Sobel filters \cite{JIN2005257}
 \end{itemize}
 
+The preprocessing methods mentioned above are just a small quantity of the vast plethora of possibility being the idea of them regurally the same, boil down the original image to the most crude and important features. After having said features it is possible to process the image in order to extrac relevant results in this case road location.  
+
+\subsection{Road Extraction Workflow}
+Hough transforms are frequently employed for detecting straight-line segments in road extraction tasks. The standard Hough transform operates on binary images; however, several extensions have been proposed to improve robustness. One such extension is the Spatial Signature Weighted Hough Transform (SSWHT), which incorporates local intensity signatures to enhance detection performance. This technique is the primary method adopted in the reviewed study. Although alternative approaches exist, they are not examined in detail in this survey. Focusing on the selected work, the complete road extraction workflow is illustrated in \cref{fig:JIN2005257_1}. 
+
+Despite achieving an average performance of 86.0\%, as shown in \cref{tab:data_results_part_1}, this method suffers from the same limitations as other heuristic approaches when applied to complex or heterogeneous terrain. These shortcomings are regarded as a reason for the transition of both industry and academic research toward data-driven methods.
+
 \section{Data-Driven Methods}
-Recent research increasingly favors data-driven approaches based on deep
-learning.
+Recent research increasingly favors data-driven approaches based on deep learning. Unlike heuristic methods, these approaches typically require little to no explicit pre-processing, as feature extraction is learned directly by the model during training. Data-driven methods can vary widely in architectural design; however, this section focuses on the four most prominent architectural families identified in the literature and describes their core characteristics and typical applications. It should be noted that data-driven methods typically require substantially larger amounts of training data such as high-quality satellite imagery to be trained effectively.
 
 \begin{figure}[t]
     \centering
@@ -183,9 +169,8 @@ learning.
 \end{figure}
 
 \subsection{Patch-Based CNN Models}
-"In the patch-based CNN model, the possibility of road dispensation is firstly predicted piece-by-
-piece with a particular stride and then the label map of the whole image is produced by assembling
-all of the label patches. Figure \cref{fig:rs12091444_2} illustrat"\cite{rs12091444}
+Patch-based Convolutional Neural Nets (CNN) models operate by dividing a large satellite image into smaller, fixed-size patches, which are then processed independently by a convolutional neural network. For each patch, the model predicts the probability of the central pixel or the entire patch belonging to a road class. The final segmentation map is produced by sliding the patch window across the image with a predefined stride and assembling the individual predictions into a full-sized label map, as illustrated in \cref{fig:rs12091444_2}.
+This approach allows the network to focus on local spatial context and reduces memory requirements during training. However, because each patch is processed independently, patch-based methods may suffer from spatial inconsistencies and fragmented road segments, particularly at patch boundaries. 
 
 \begin{figure}[t]
     \centering
@@ -194,16 +179,9 @@ all of the label patches. Figure \cref{fig:rs12091444_2} illustrat"\cite{rs12091
     \label{fig:rs12091444_2}
 \end{figure}
 
-\begin{itemize}
-    \item Patch based models \cite{ALSHEHHI2017139}
-    \item RSRCNN \cite{7876793}
-    \item DeepLabv3+ \cite{8447237}
-\end{itemize}
-
 \subsection{FCN Models}
-Fully Convolutional Networks improve spatial consistency but may still suffer
-from broken or incomplete road segments, especially in curved or occluded
-regions. Fig~\cref{fig:rs12091444_3}
+Fully Convolutional Networks (FCNs) replace the fully connected layers of traditional CNNs with convolutional layers, enabling dense, pixel-wise prediction over the entire image in a single forward pass, as shown in \cref{fig:rs12091444_3}. By operating on full-resolution images, FCNs preserve spatial relationships and improve global consistency compared to patch-based methods.
+FCNs typically employ downsampling through pooling layers to capture high-level semantic features, followed by upsampling to recover spatial resolution. Skip connections are often used to combine coarse semantic information with fine-grained spatial details. Despite these improvements, FCNs may still produce broken or incomplete road segments, particularly in regions with occlusions, shadows, or highly curved roads.
 
 \begin{figure}[t]
     \centering
@@ -212,20 +190,9 @@ regions. Fig~\cref{fig:rs12091444_3}
     \label{fig:rs12091444_3}
 \end{figure}
 
-\begin{itemize}
-    \item FCN \cite{8628717}
-    \item U-shaped FCN (UFCN) \cite{10.1117/1.JRS.12.016020}
-    \item SVM \cite{10.1117/1.JRS.12.016020}
-    \item FCN-8 \cite{8447237} \cite{7729406}
-    \item Enlarged FCN-4s \cite{7729406}
-    \item Pruned FCN-2s \cite{7729406}
-    \item Deep Residual UNet \cite{8447237}
-\end{itemize}
-
-\subsection{Deep convolutional encoder-decoder (DCED) Models}
-Deconvolutional architectures provide high spatial accuracy and produce
-smoother segmentation maps but require more computational resources and memory.
-Fig~\cref{fig:rs12091444_4}
+\subsection{DCED Models}
+Deep convolutional encoder-decoder (DCED) architectures consist of an encoder that progressively reduces spatial resolution while learning abstract feature representations, just like a FCN,  followed by a decoder that reconstructs the segmentation map at the original image resolution. The decoder typically uses upsampling or transposed convolutions, often combined with skip connections from corresponding encoder layers to recover spatial detail, as illustrated in \cref{fig:rs12091444_4}.
+These models are well suited for road extraction tasks due to their ability to capture both global context and fine structural details, resulting in smoother and more continuous road predictions. However, DCED models generally require higher computational resources and memory, making them more expensive to train and deploy compared to simpler CNN or FCN architectures.
 
 \begin{figure}[t]
     \centering
@@ -234,20 +201,9 @@ Fig~\cref{fig:rs12091444_4}
     \label{fig:rs12091444_4}
 \end{figure}
 
-\begin{itemize}
-    \item modified deep encoder-decoder neural network
-          \cite{10.1007/978-3-319-60663-7_18}
-    \item finite state machine (FSM) and DNN \cite{Wang18062015}
-    \item UNet CNN \cite{8605652}
-    \item richer convolutional features (RCFs) \cite{8447193}
-    \item DenseUNet \cite{rs11212499}
-    \item cascaded end-to-end (CasNet) \cite{7873262}
-\end{itemize}
-
 \subsection{GAN-Based Models}
-Generative Adversarial Networks (GANs) offer robustness and can improve
-boundary sharpness, though they may encounter convergence issues on large or
-complex datasets. Fig~\cref{fig:rs12091444_5}
+Generative Adversarial Network (GAN) based approaches frame road extraction as an image-to-image translation problem. A generator network produces a road segmentation map from the input image, while a discriminator network attempts to distinguish between ground-truth labels and generated outputs. Through adversarial training, the generator learns to produce more realistic and spatially coherent segmentation results, as depicted in \cref{fig:rs12091444_5}.
+GAN-based models are particularly effective at sharpening road boundaries and enforcing structural consistency. However, they are often more difficult to train due to instability and convergence issues, especially when applied to large-scale or highly diverse datasets. Careful tuning of training strategies and loss functions is typically required to achieve stable performance.
 
 \begin{figure}[t]
     \centering
@@ -256,11 +212,7 @@ complex datasets. Fig~\cref{fig:rs12091444_5}
     \label{fig:rs12091444_5}
 \end{figure}
 
-\begin{itemize}
-    \item dual-hot generative adversarial networks(DH-GAN) \cite{8265456}
-    \item GANs-UNet \cite{8628717}
-    \item GANs \cite{8106771}
-\end{itemize}
+With a clear understanding of how each architecture operates, the next section presents the results of the 20 surveyed papers, ranked according to the average of the reported evaluation metrics. It should be noted that the values shown correspond to the lowest performance reported in each study. This approach was chosen because researchers typically publish their best-performing results, which may not fully represent the typical or average performance of the method. By focusing on the lower-end outcomes, we aim to provide a more realistic comparison of each approach's robustness and reliability.
 
 \begin{landscape}
 
@@ -294,21 +246,19 @@ Heuristic & \cite{JIN2005257} & Fusion of two detectors & 84.33\%& - & - & 84\% 
 & \cite{8447193} & SEEDS-MCNN & 82.2\% & 79\% & - & - & - & - & 80.4\% & - & 78\% & 92.2\%\\
 & \cite{rs16050839} & ResNet-24+ & 81\% & 81\% & -&-&-&-&-&-& - & -\\
 & \cite{ALSHEHHI2017139} & Rasha et al.  & 80.9\%  & - & - & - & 80.9\% & - & - & - & - & - \\
-& \cite{rs12182985} & Dice & 80.52\% & 84.97\% & - & - & 83.63\% & - & - & 73.87\% & - & -\\
 & \cite{10.1117/1.JRS.12.016020} & 1D-CNN & 79.72\% & 73.4\% & - & - & - & - & 99.3\% & - & 58.2\% & 88\%\\
-& \cite{rs12182985} & Softmax & 78.79\% & 83.55\% & - & - & 81.08\% & - & - & 71.75\% & - & -\\
 CNN & \cite{8447193} & SLIC-CNN & 77.95\% & 72.1\% & - & - & - & - & 96.2\% & - & 58.1\% & 89.2\%\\
 & \cite{8447193} & Pixel-CNN & 77.72\% & 71.2\% & - & - & - & - & 96.2\% & - & 57\% & 86.5\%\\
 & \cite{10.1117/1.JRS.12.016020} & 2D-CNN & 72.15\% & 66.6\% & - & - & - & - & 72.7\% & - & 61.4\% & 87.9\%\\
 & \cite{rs16050839} & ResNet-24 & 69.5\% & 81\% & 58\%&-&-&-&-&-& - & -\\
-& \cite{rs15010271} & DeepLabv3+ & 69.28\% & 72.39\% & - & - & - & 56.4\% & 62.67\% & - & 85.67\% & -\\
-& \cite{8447237} & DeepLabv3+ & 40.91\% & - & - & - & - & - & - & 40.91\% & - & -\\
 & \cite{7876793} & RSRCNN & 40.38\% & 20.8\% & - & - & - & - & 61.3\% & - & 12.5\% & 70.9\%\\
 \hline
 & \cite{8628717} & FCN-32 & 86.23\% & - & - & 74.2\% & 98.7\% & 85.8\% & - & - & - & -\\
 & \cite{rs12182985} & Dice+BCE & 80.11\% & 84.41\% & - & - & 82.91\% & - & - & 73.02\% & - & -\\
 & \cite{rs12182985} & WBCE & 78.99\% & 83.64\% & - & - & 81.43\% & - & - & 71.89\% & - & -\\
-FCN & \cite{8628717} & RSRCNN + road struct weight based & 73.03\% & 66.2\% & - & - & - & - & 72.9\% & - & 60.6\% & 92.4\%\\
+& \cite{8628717} & RSRCNN + road struct weight based & 73.03\% & 66.2\% & - & - & - & - & 72.9\% & - & 60.6\% & 92.4\%\\
+FCN & \cite{rs15010271} & DeepLabv3+ & 69.28\% & 72.39\% & - & - & - & 56.4\% & 62.67\% & - & 85.67\% & -\\
+& \cite{8447237} & DeepLabv3+ & 40.91\% & - & - & - & - & - & - & 40.91\% & - & -\\
 & \cite{7729406} & Enlarged FCN-4s & 63\% & - & 52\% & - & - & - & 66\% & - & 71\% & -\\
 & \cite{8447237} & FCN-8 & 54.73\% & - & - & - & - & - & 66.56\% & 42.92\% & 54.72\% & -\\
 & \cite{7729406} & Pruned FCN-2s & 53.67\% & - & 42\% & - & - & - & 61\% & - & 58\% & -\\
@@ -349,8 +299,10 @@ FCN & \cite{8628717} & RSRCNN + road struct weight based & 73.03\% & 66.2\% & - 
 & \cite{8447193} & UNet & 90.03\% & 88.9\% & - & - & - & - & 88.5\% & - & 89.3\% & 93.4\%\\
 & \cite{10.1007/978-3-319-60663-7_18} & ELU-SegNet-RL & 85.73\% & 85.7\% & - & - & - & - & 86.1\% & - & 85.4\% & -\\
 & \cite{10.1007/978-3-319-60663-7_18} & ELU-SegNet-R & 81.3\% & 81.2\% & - & - & - & - & 84.7\% & - & 78\% & -\\
+& \cite{rs12182985} & Dice & 80.52\% & 84.97\% & - & - & 83.63\% & - & - & 73.87\% & - & -\\
 & \cite{8605652} & Modified UNet & 80.33\% & 74.54\% & - & - & - & - & 75.48\% & - & 74.15\% & 97.14\%\\
 DCED & \cite{10.1007/978-3-319-60663-7_18} & ELU-SegNet & 79.1\% & 78.8\% & - & - & - & - & 73.3\% & - & 85.2\% & -\\
+& \cite{rs12182985} & Softmax & 78.79\% & 83.55\% & - & - & 81.08\% & - & - & 71.75\% & - & -\\
 & \cite{rs11212499} & DenseUNet & 74.3\% & 74.07\% & - & - & - & - & 70.41\% & 74.47\% & 78.25\% & -\\
 & \cite{rs11212499} & GL-Dense-UNet & 73.82\% & 73.98\% & - & - & - & - & 70.09\% & 72.73\% & 78.48\% & -\\
 & \cite{rs11212499} & FRRN-B & 70.57\% & 66.71\% & - & - & - & - & 64.87\% & 74.22\% & 76.51\% & -\\
