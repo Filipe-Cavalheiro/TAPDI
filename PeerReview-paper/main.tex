@@ -47,19 +47,13 @@
 \end{IEEEkeywords}
 
 \section{Introduction}
-Accurate and up-to-date road maps are essential for transportation planning,
-emergency response, and environmental monitoring. However, many regions
-particularly in remote or developing areas remain poorly mapped. Traditional
-mapping efforts are often slow, inconsistent, and difficult to scale.
+Accurate and up-to-date road maps are crucial for transportation planning, emergency response, and environmental monitoring. However, many regions—particularly remote or developing areas—remain poorly mapped, as traditional mapping efforts are often slow, inconsistent, and difficult to scale.
 
-Recent advances in artificial intelligence, especially deep learning applied to
-high-resolution satellite imagery, have significantly improved the feasibility
-of automated road extraction. Being there implementations for urban and rural environments.
+Recent advances in artificial intelligence, especially deep learning applied to high-resolution satellite imagery, have greatly enhanced the feasibility of automated road extraction, with implementations now available for both urban and rural environments.
 
-In this paper a total of 20 papers from the last 10 years have been analysised and compared with the intent to see any trends in more desirable architecture with this goal in mind.
+This paper surveys and analyzes 20 studies published over the last decade, with the aim of identifying trends and highlighting which architectures show the most promise for road extraction tasks.
 
-The paper is subdivided in 6 sections, the current one, observed methods for data gathering for training, testing and validation, heuristic methods, data driven methods, error calculation and conclusions.
-
+The paper is organized into six sections: the current introduction, methods for data gathering and annotation, heuristic approaches, data-driven methods, reported results, evaluation metrics, and conclusions.
 \section{Data Gathering}
 
 Accurate road extraction depends heavily on the quality, diversity, and
@@ -212,6 +206,7 @@ GAN-based models are particularly effective at sharpening road boundaries and en
     \label{fig:rs12091444_5}
 \end{figure}
 
+\section{Results}
 With a clear understanding of how each architecture operates, the next section presents the results of the 20 surveyed papers, ranked according to the average of the reported evaluation metrics. It should be noted that the values shown correspond to the lowest performance reported in each study. This approach was chosen because researchers typically publish their best-performing results, which may not fully represent the typical or average performance of the method. By focusing on the lower-end outcomes, we aim to provide a more realistic comparison of each approach's robustness and reliability.
 
 \begin{landscape}
