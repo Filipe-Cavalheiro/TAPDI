@@ -39,7 +39,7 @@
 \maketitle
 
 \begin{abstract}
-    The automatic identification of road networks from satellite and aerial imagery has become a critical task for applications such as transportation planning, disaster response, and environmental monitoring, particularly in regions where cartographic data are incomplete or outdated. This paper presents a comprehensive survey of road extraction methods applied to both urban and rural environments, covering research published over the past decade. Modern data-driven techniques are reviewed. Particular emphasis is placed on convolutional neural networks, fully convolutional networks, encoder-decoder architectures, and generative adversarial networks, highlighting their respective strengths and limitations under varying environmental conditions. In addition, commonly used satellite sensors, annotation sources, benchmark datasets, and evaluation metrics are discussed to provide a unified perspective on experimental practices in the literature. By comparing reported results across a wide range of methods, this survey identifies prevailing trends in model performance and exposes challenges related to inconsistent evaluation protocols and dataset variability. The paper concludes by emphasizing the need for standardized benchmarks and evaluation frameworks to enable more reliable and meaningful comparisons between road extraction approaches.
+    The automatic identification of road networks from satellite and aerial imagery has become a critical task for many applications, such as transportation planning, particularly in regions where cartographic data are incomplete or outdated. This paper presents a comprehensive survey of road extraction methods applied to both urban and rural environments, covering research published over the past decade. Modern data-driven techniques are reviewed. Particular emphasis is placed on convolutional neural networks (CNN), fully convolutional networks (FCN), encoder-decoder architectures (DCED), and generative adversarial networks (GAN), highlighting their respective strengths and limitations under varying environmental conditions. In addition, commonly used satellite sensors, annotation sources, benchmark datasets, and evaluation metrics are discussed to provide a unified perspective on experimental practices in the literature. By comparing reported results across a wide range of methods, this survey identifies prevailing trends in model performance and exposes challenges related to inconsistent evaluation protocols and dataset variability. The paper concludes by emphasizing the need for standardized benchmarks and evaluation frameworks to enable more reliable and meaningful comparisons between road extraction approaches.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -47,13 +47,24 @@
 \end{IEEEkeywords}
 
 \section{Introduction}
-Accurate and up-to-date road maps are crucial for transportation planning, emergency response, and environmental monitoring. However, many regions—particularly remote or developing areas—remain poorly mapped, as traditional mapping efforts are often slow, inconsistent, and difficult to scale.
+Accurate and up-to-date road maps are crucial for transportation planning,
+emergency response, and environmental monitoring. However, many regions,
+particularly in remote or developing areas, remain poorly mapped, as
+traditional mapping efforts are often slow, inconsistent, and difficult to
+scale.
 
-Recent advances in artificial intelligence, especially deep learning applied to high-resolution satellite imagery, have greatly enhanced the feasibility of automated road extraction, with implementations now available for both urban and rural environments.
+Recent advances in artificial intelligence, especially deep learning, applied
+to high-resolution satellite imagery, have greatly enhanced the feasibility of
+automated road extraction, with implementations now effective for road
+detection in both urban and rural environments.
 
-This paper surveys and analyzes 20 studies published over the last decade, with the aim of identifying trends and highlighting which architectures show the most promise for road extraction tasks.
+This paper surveys and analyzes 20 studies published over the last decade, with
+the aim of identifying trends and highlighting which architectures show the
+most promise for road extraction tasks.
 
-The paper is organized into six sections: the current introduction, methods for data gathering and annotation, heuristic approaches, data-driven methods, reported results, evaluation metrics, and conclusions.
+The paper is organized into six sections: the current introduction, methods for
+data gathering and annotation, heuristic approaches, data-driven methods,
+reported results, evaluation metrics, and conclusions.
 \section{Data Gathering}
 
 Accurate road extraction depends heavily on the quality, diversity, and
@@ -61,7 +72,7 @@ resolution of the imagery used for training and evaluation. Modern approaches
 typically rely on a combination of publicly available satellite data,
 commercial high-resolution sensors, and crowdsourced annotations. This section
 summarizes the most commonly used sources and benchmark datasets in the
-literature. Each one of references following a list item is representative of a
+literature. Each of the references following a list item is representative of a
 paper using said data collection.
 
 \subsection{Satellite and Aerial Imagery Sources}
@@ -71,7 +82,7 @@ information suitable for distinguishing between road surfaces, vegetation, and
 surrounding terrain. Commonly used satellites include:
 
 \begin{itemize}
-    \item \textbf{IKONOS}: provides 1 m panchromatic and 4 m multispectral imagery. \cite{JIN2005257}
+    \item \textbf{IKONOS}: provides 1 m panchromatic and 4 m multispectral resolution imagery. \cite{JIN2005257}
     \item \textbf{QuickBird}: offers black and white 61 centimeter resolution and 2.44-1.63 meter multispectral resolution imagery, used mostly for urban road extraction studies. (reentered Earth after orbit decay in 2015 \cite{QuickBird2} \cite{QuickBird2_wiki}) \cite{JIN2005257} \cite{Wang18062015}
     \item \textbf{Pleiades-1A/1B}: delivers 0.5 m spatial resolution, particularly useful for modeling complex urban road networks \cite{rs12182985}.
     \item \textbf{GeoEye}: another high-resolution commercial sensor often used for cross-sensor generalization experiments \cite{rs12182985}.
@@ -113,7 +124,15 @@ urban grids to remote rural and tropical regions supporting the development of
 generalizable road extraction models.
 
 \section{Heuristic Methods}
-Early road extraction pipelines rely on handcrafted features such as texture analysis, morphological filtering, and edge detection. Although these methods are computationally efficient, they generally struggle when applied to complex or heterogeneous terrain. Consequently, heuristic-based approaches have seen a significant decline in usage in recent years. In this survey, only one representative study on heuristic methods is included, reflecting the authors' assessment that such approaches are largely obsolete and rarely adopted in contemporary road extraction research.
+Early road extraction pipelines relied on handcrafted features extraction such
+as texture analysis, morphological filtering, and edge detection. Although
+these methods are computationally efficient, they generally struggle when
+applied to complex or heterogeneous terrain, or when image obstructions are
+present, occluding road features. Consequently, heuristic-based approaches have
+seen a significant decline in usage in recent years. In this survey, only one
+representative study on heuristic methods is included, reflecting the authors'
+assessment that such approaches are largely obsolete and rarely adopted in
+contemporary road extraction research.
 
 Texture-based progressive analysis and mathematical morphology techniques have
 been widely applied; however, they often fail to generalize across different
@@ -145,15 +164,39 @@ Typical preprocessing steps include:
           than Sobel filters \cite{JIN2005257}
 \end{itemize}
 
-The preprocessing methods mentioned above are just a small quantity of the vast plethora of possibility being the idea of them regurally the same, boil down the original image to the most crude and important features. After having said features it is possible to process the image in order to extrac relevant results in this case road location.  
+The preprocessing methods mentioned above are just a small quantity of the vast
+plethora of possibilities, regurally sharing the same idea, boil down the
+original image to the most crude and important features. After having said
+features it is possible to process the image in order to extrac relevant
+results in this case road location.
 
 \subsection{Road Extraction Workflow}
-Hough transforms are frequently employed for detecting straight-line segments in road extraction tasks. The standard Hough transform operates on binary images; however, several extensions have been proposed to improve robustness. One such extension is the Spatial Signature Weighted Hough Transform (SSWHT), which incorporates local intensity signatures to enhance detection performance. This technique is the primary method adopted in the reviewed study. Although alternative approaches exist, they are not examined in detail in this survey. Focusing on the selected work, the complete road extraction workflow is illustrated in \cref{fig:JIN2005257_1}. 
+Hough transforms are frequently employed for detecting straight-line segments
+in road extraction tasks. The standard Hough transform operates on binary
+images; however, several extensions have been proposed to improve robustness.
+One such extension is the Spatial Signature Weighted Hough Transform (SSWHT),
+which incorporates local intensity signatures to enhance detection performance.
+This technique is the primary method adopted in the reviewed study. Although
+alternative approaches exist, they are not examined in detail in this survey.
+Focusing on the selected work, the complete road extraction workflow is
+illustrated in \cref{fig:JIN2005257_1}.
 
-Despite achieving an average performance of 86.0\%, as shown in \cref{tab:data_results_part_1}, this method suffers from the same limitations as other heuristic approaches when applied to complex or heterogeneous terrain. These shortcomings are regarded as a reason for the transition of both industry and academic research toward data-driven methods.
+Despite achieving an average performance of 86.0\%, as shown in
+\cref{tab:data_results_part_1}, this method suffers from the same limitations
+as other heuristic approaches when applied to complex or heterogeneous terrain.
+These shortcomings are regarded as a reason for the transition of both industry
+and academic research toward data-driven methods.
 
 \section{Data-Driven Methods}
-Recent research increasingly favors data-driven approaches based on deep learning. Unlike heuristic methods, these approaches typically require little to no explicit pre-processing, as feature extraction is learned directly by the model during training. Data-driven methods can vary widely in architectural design; however, this section focuses on the four most prominent architectural families identified in the literature and describes their core characteristics and typical applications. It should be noted that data-driven methods typically require substantially larger amounts of training data such as high-quality satellite imagery to be trained effectively.
+Recent research increasingly favors data-driven approaches based on deep
+learning. Unlike heuristic methods, these approaches typically require little
+to no explicit pre-processing, as feature extraction is learned directly by the
+model during training. Data-driven methods can vary widely in architectural
+design; however, this section focuses on the four most prominent architectural
+families identified in literature and describes their core characteristics and
+typical applications. It should be noted that data-driven methods typically
+require substantially larger amounts of training data such as high-quality
+satellite imagery to be trained effectively.
 
 \begin{figure}[t]
     \centering
@@ -163,8 +206,21 @@ Recent research increasingly favors data-driven approaches based on deep learnin
 \end{figure}
 
 \subsection{Patch-Based CNN Models}
-Patch-based Convolutional Neural Nets (CNN) models operate by dividing a large satellite image into smaller, fixed-size patches, which are then processed independently by a convolutional neural network. For each patch, the model predicts the probability of the central pixel or the entire patch belonging to a road class. The final segmentation map is produced by sliding the patch window across the image with a predefined stride and assembling the individual predictions into a full-sized label map, as illustrated in \cref{fig:rs12091444_2}.
-This approach allows the network to focus on local spatial context and reduces memory requirements during training. However, because each patch is processed independently, patch-based methods may suffer from spatial inconsistencies and fragmented road segments, particularly at patch boundaries. 
+Much like Heuristic methods Convolutional Neural Nets (CNN) also have a
+preprocessing feature extraction, using convolutional layers, however instead
+of having set rules to classify the image, these features are sent to a fully
+connected neural network that classifies the image based on these features, as
+illustrated in \cref{fig:rs12091444_2}.\\ Patch-based CNN models operate by
+dividing a large satellite image into smaller, fixed-size patches, which are
+then processed independently by a convolutional neural network. For each patch,
+the model predicts the probability of the central pixel or the entire patch
+belonging to a road class. The final segmentation map is produced by sliding
+the patch window across the image with a predefined stride and assembling the
+individual predictions into a full-sized label map. This approach allows the
+network to focus on local spatial context and reduces memory requirements
+during training. However, because each patch is processed independently,
+patch-based methods may suffer from spatial inconsistencies and fragmented road
+segments, particularly at patch boundaries.
 
 \begin{figure}[t]
     \centering
@@ -174,8 +230,17 @@ This approach allows the network to focus on local spatial context and reduces m
 \end{figure}
 
 \subsection{FCN Models}
-Fully Convolutional Networks (FCNs) replace the fully connected layers of traditional CNNs with convolutional layers, enabling dense, pixel-wise prediction over the entire image in a single forward pass, as shown in \cref{fig:rs12091444_3}. By operating on full-resolution images, FCNs preserve spatial relationships and improve global consistency compared to patch-based methods.
-FCNs typically employ downsampling through pooling layers to capture high-level semantic features, followed by upsampling to recover spatial resolution. Skip connections are often used to combine coarse semantic information with fine-grained spatial details. Despite these improvements, FCNs may still produce broken or incomplete road segments, particularly in regions with occlusions, shadows, or highly curved roads.
+Fully Convolutional Networks (FCNs) replace the fully connected neural net
+layers of traditional CNNs with not fully connected ones, enabling dense,
+pixel-wise prediction over the entire image in a single forward pass, as shown
+in \cref{fig:rs12091444_3}. By operating on full-resolution images, FCNs
+preserve spatial relationships and improve global consistency compared to
+patch-based methods. FCNs typically employ downsampling through pooling layers
+to capture high-level semantic features, followed by upsampling to recover
+spatial resolution. Skip connections are often used to combine coarse semantic
+information with fine-grained spatial details. Despite these improvements, FCNs
+may still produce broken or incomplete road segments, particularly in regions
+with occlusions, shadows, or highly curved roads.
 
 \begin{figure}[t]
     \centering
@@ -185,8 +250,18 @@ FCNs typically employ downsampling through pooling layers to capture high-level 
 \end{figure}
 
 \subsection{DCED Models}
-Deep convolutional encoder-decoder (DCED) architectures consist of an encoder that progressively reduces spatial resolution while learning abstract feature representations, just like a FCN,  followed by a decoder that reconstructs the segmentation map at the original image resolution. The decoder typically uses upsampling or transposed convolutions, often combined with skip connections from corresponding encoder layers to recover spatial detail, as illustrated in \cref{fig:rs12091444_4}.
-These models are well suited for road extraction tasks due to their ability to capture both global context and fine structural details, resulting in smoother and more continuous road predictions. However, DCED models generally require higher computational resources and memory, making them more expensive to train and deploy compared to simpler CNN or FCN architectures.
+Deep convolutional encoder-decoder (DCED) architectures consist of an encoder
+that progressively reduces spatial resolution while learning abstract feature
+representations, just like a CNN or FCN, followed by a decoder that
+reconstructs the segmentation map at the original image resolution. The decoder
+typically uses upsampling or transposed convolutions, often combined with skip
+connections from corresponding encoder layers to recover spatial detail, as
+illustrated in \cref{fig:rs12091444_4}. These models are well suited for road
+extraction tasks due to their ability to capture both global context and fine
+structural details, resulting in smoother and more continuous road predictions.
+However, DCED models generally require higher computational resources and
+memory, making them more expensive to train and deploy compared to simpler CNN
+or FCN architectures.
 
 \begin{figure}[t]
     \centering
@@ -196,8 +271,18 @@ These models are well suited for road extraction tasks due to their ability to c
 \end{figure}
 
 \subsection{GAN-Based Models}
-Generative Adversarial Network (GAN) based approaches frame road extraction as an image-to-image translation problem. A generator network produces a road segmentation map from the input image, while a discriminator network attempts to distinguish between ground-truth labels and generated outputs. Through adversarial training, the generator learns to produce more realistic and spatially coherent segmentation results, as depicted in \cref{fig:rs12091444_5}.
-GAN-based models are particularly effective at sharpening road boundaries and enforcing structural consistency. However, they are often more difficult to train due to instability and convergence issues, especially when applied to large-scale or highly diverse datasets. Careful tuning of training strategies and loss functions is typically required to achieve stable performance.
+Generative Adversarial Network (GAN) based approaches frame road extraction as
+an image-to-image translation problem. A generator network produces a road
+segmentation map from the input image, while a discriminator network attempts
+to distinguish between ground-truth labels and generated outputs. Through
+adversarial training, the generator learns to produce more realistic and
+spatially coherent segmentation results, as depicted in
+\cref{fig:rs12091444_5}. GAN-based models are particularly effective at
+sharpening road boundaries and enforcing structural consistency. However, they
+are often more difficult to train due to instability and convergence issues,
+especially when applied to large-scale or highly diverse datasets. Careful
+tuning of training strategies and loss functions is typically required to
+achieve stable performance.
 
 \begin{figure}[t]
     \centering
@@ -207,61 +292,68 @@ GAN-based models are particularly effective at sharpening road boundaries and en
 \end{figure}
 
 \section{Results}
-With a clear understanding of how each architecture operates, the next section presents the results of the 20 surveyed papers, ranked according to the average of the reported evaluation metrics. It should be noted that the values shown correspond to the lowest performance reported in each study. This approach was chosen because researchers typically publish their best-performing results, which may not fully represent the typical or average performance of the method. By focusing on the lower-end outcomes, we aim to provide a more realistic comparison of each approach's robustness and reliability.
+With a clear understanding of how each architecture operates, the next section
+presents the results of the 20 surveyed papers, ranked according to the average
+of the reported evaluation metrics. It should be noted that the values shown
+correspond to the lowest performance reported in each study. This approach was
+chosen because researchers typically publish their best-performing results,
+which may not fully represent the typical or average performance of the method.
+By focusing on the lower-end outcomes, we aim to provide a more realistic
+comparison of each approach's robustness and reliability.
 
 \begin{landscape}
 
-\begin{table}[p]
-   
-\caption{Data Results of each method - Part 1}
-\renewcommand{\arraystretch}{1.3}
-\hspace{-2cm}
-\begin{tabular}{
-    p{0.8cm} 
-    >{\centering\arraybackslash}p{.6cm} 
-    p{2.8cm} 
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-}
-\hline
-\textbf{Method} & \textbf{Paper} & \textbf{Model} & \textbf{Avg} & \textbf{F1 Score~\eqref{eq:F1_score}} & \textbf{mIoU~\eqref{eq:mIoU}} & \textbf{Completeness~\eqref{eq:Completeness}} & \textbf{Correctness~\eqref{eq:Correctness}} & \textbf{Quality~\eqref{eq:Quality}} & \textbf{Recall~\eqref{eq:Recall}} & \textbf{IoU~\eqref{eq:IoU}} & \textbf{precision~\eqref{eq:precision}} & \textbf{accuracy~\eqref{eq:accuracy}} \\
-\hline
-& \cite{JIN2005257} & Road tracking & 86.0\% & - & - & 86\% & 92\% & 80\% & - & - & -\\
-Heuristic & \cite{JIN2005257} & Fusion of two detectors & 84.33\%& - & - & 84\% & 91\% & 78\% & - & -& - & -\\
-& \cite{JIN2005257} & Detector I & 82.33\% & - & - & 81\% & 91\% & 75\% & - & -\\
-\hline
-& \cite{8447193} & SEEDS-MCNN & 82.2\% & 79\% & - & - & - & - & 80.4\% & - & 78\% & 92.2\%\\
-& \cite{rs16050839} & ResNet-24+ & 81\% & 81\% & -&-&-&-&-&-& - & -\\
-& \cite{ALSHEHHI2017139} & Rasha et al.  & 80.9\%  & - & - & - & 80.9\% & - & - & - & - & - \\
-& \cite{10.1117/1.JRS.12.016020} & 1D-CNN & 79.72\% & 73.4\% & - & - & - & - & 99.3\% & - & 58.2\% & 88\%\\
-CNN & \cite{8447193} & SLIC-CNN & 77.95\% & 72.1\% & - & - & - & - & 96.2\% & - & 58.1\% & 89.2\%\\
-& \cite{8447193} & Pixel-CNN & 77.72\% & 71.2\% & - & - & - & - & 96.2\% & - & 57\% & 86.5\%\\
-& \cite{10.1117/1.JRS.12.016020} & 2D-CNN & 72.15\% & 66.6\% & - & - & - & - & 72.7\% & - & 61.4\% & 87.9\%\\
-& \cite{rs16050839} & ResNet-24 & 69.5\% & 81\% & 58\%&-&-&-&-&-& - & -\\
-& \cite{7876793} & RSRCNN & 40.38\% & 20.8\% & - & - & - & - & 61.3\% & - & 12.5\% & 70.9\%\\
-\hline
-& \cite{8628717} & FCN-32 & 86.23\% & - & - & 74.2\% & 98.7\% & 85.8\% & - & - & - & -\\
-& \cite{rs12182985} & Dice+BCE & 80.11\% & 84.41\% & - & - & 82.91\% & - & - & 73.02\% & - & -\\
-& \cite{rs12182985} & WBCE & 78.99\% & 83.64\% & - & - & 81.43\% & - & - & 71.89\% & - & -\\
-& \cite{8628717} & RSRCNN + road struct weight based & 73.03\% & 66.2\% & - & - & - & - & 72.9\% & - & 60.6\% & 92.4\%\\
-FCN & \cite{rs15010271} & DeepLabv3+ & 69.28\% & 72.39\% & - & - & - & 56.4\% & 62.67\% & - & 85.67\% & -\\
-& \cite{8447237} & DeepLabv3+ & 40.91\% & - & - & - & - & - & - & 40.91\% & - & -\\
-& \cite{7729406} & Enlarged FCN-4s & 63\% & - & 52\% & - & - & - & 66\% & - & 71\% & -\\
-& \cite{8447237} & FCN-8 & 54.73\% & - & - & - & - & - & 66.56\% & 42.92\% & 54.72\% & -\\
-& \cite{7729406} & Pruned FCN-2s & 53.67\% & - & 42\% & - & - & - & 61\% & - & 58\% & -\\
-& \cite{7729406} & FCN-8s & 40.67\% & - & 30\% & - & - & - & 49\% & - & 43\% & -\\
-\hline
-\end{tabular}
-\label{tab:data_results_part_1}
-\end{table}
+    \begin{table}[p]
+
+        \caption{Data Results of each method - Part 1}
+        \renewcommand{\arraystretch}{1.3}
+        \hspace{-2cm}
+        \begin{tabular}{
+            p{0.8cm}
+            >{\centering\arraybackslash}p{.6cm}
+            p{2.8cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            }
+            \hline
+            \textbf{Method} & \textbf{Paper}                 & \textbf{Model}                    & \textbf{Avg} & \textbf{F1 Score~\eqref{eq:F1_score}} & \textbf{mIoU~\eqref{eq:mIoU}} & \textbf{Completeness~\eqref{eq:Completeness}} & \textbf{Correctness~\eqref{eq:Correctness}} & \textbf{Quality~\eqref{eq:Quality}} & \textbf{Recall~\eqref{eq:Recall}} & \textbf{IoU~\eqref{eq:IoU}} & \textbf{precision~\eqref{eq:precision}} & \textbf{accuracy~\eqref{eq:accuracy}} \\
+            \hline
+                            & \cite{JIN2005257}              & Road tracking                     & 86.0\%       & -                                     & -                             & 86\%                                          & 92\%                                        & 80\%                                & -                                 & -                           & -                                                                               \\
+            Heuristic       & \cite{JIN2005257}              & Fusion of two detectors           & 84.33\%      & -                                     & -                             & 84\%                                          & 91\%                                        & 78\%                                & -                                 & -                           & -                                       & -                                     \\
+                            & \cite{JIN2005257}              & Detector I                        & 82.33\%      & -                                     & -                             & 81\%                                          & 91\%                                        & 75\%                                & -                                 & -                                                                                                             \\
+            \hline
+                            & \cite{8447193}                 & SEEDS-MCNN                        & 82.2\%       & 79\%                                  & -                             & -                                             & -                                           & -                                   & 80.4\%                            & -                           & 78\%                                    & 92.2\%                                \\
+                            & \cite{rs16050839}              & ResNet-24+                        & 81\%         & 81\%                                  & -                             & -                                             & -                                           & -                                   & -                                 & -                           & -                                       & -                                     \\
+                            & \cite{ALSHEHHI2017139}         & Rasha et al.                      & 80.9\%       & -                                     & -                             & -                                             & 80.9\%                                      & -                                   & -                                 & -                           & -                                       & -                                     \\
+                            & \cite{10.1117/1.JRS.12.016020} & 1D-CNN                            & 79.72\%      & 73.4\%                                & -                             & -                                             & -                                           & -                                   & 99.3\%                            & -                           & 58.2\%                                  & 88\%                                  \\
+            CNN             & \cite{8447193}                 & SLIC-CNN                          & 77.95\%      & 72.1\%                                & -                             & -                                             & -                                           & -                                   & 96.2\%                            & -                           & 58.1\%                                  & 89.2\%                                \\
+                            & \cite{8447193}                 & Pixel-CNN                         & 77.72\%      & 71.2\%                                & -                             & -                                             & -                                           & -                                   & 96.2\%                            & -                           & 57\%                                    & 86.5\%                                \\
+                            & \cite{10.1117/1.JRS.12.016020} & 2D-CNN                            & 72.15\%      & 66.6\%                                & -                             & -                                             & -                                           & -                                   & 72.7\%                            & -                           & 61.4\%                                  & 87.9\%                                \\
+                            & \cite{rs16050839}              & ResNet-24                         & 69.5\%       & 81\%                                  & 58\%                          & -                                             & -                                           & -                                   & -                                 & -                           & -                                       & -                                     \\
+                            & \cite{7876793}                 & RSRCNN                            & 40.38\%      & 20.8\%                                & -                             & -                                             & -                                           & -                                   & 61.3\%                            & -                           & 12.5\%                                  & 70.9\%                                \\
+            \hline
+                            & \cite{8628717}                 & FCN-32                            & 86.23\%      & -                                     & -                             & 74.2\%                                        & 98.7\%                                      & 85.8\%                              & -                                 & -                           & -                                       & -                                     \\
+                            & \cite{rs12182985}              & Dice+BCE                          & 80.11\%      & 84.41\%                               & -                             & -                                             & 82.91\%                                     & -                                   & -                                 & 73.02\%                     & -                                       & -                                     \\
+                            & \cite{rs12182985}              & WBCE                              & 78.99\%      & 83.64\%                               & -                             & -                                             & 81.43\%                                     & -                                   & -                                 & 71.89\%                     & -                                       & -                                     \\
+                            & \cite{8628717}                 & RSRCNN + road struct weight based & 73.03\%      & 66.2\%                                & -                             & -                                             & -                                           & -                                   & 72.9\%                            & -                           & 60.6\%                                  & 92.4\%                                \\
+            FCN             & \cite{rs15010271}              & DeepLabv3+                        & 69.28\%      & 72.39\%                               & -                             & -                                             & -                                           & 56.4\%                              & 62.67\%                           & -                           & 85.67\%                                 & -                                     \\
+                            & \cite{8447237}                 & DeepLabv3+                        & 40.91\%      & -                                     & -                             & -                                             & -                                           & -                                   & -                                 & 40.91\%                     & -                                       & -                                     \\
+                            & \cite{7729406}                 & Enlarged FCN-4s                   & 63\%         & -                                     & 52\%                          & -                                             & -                                           & -                                   & 66\%                              & -                           & 71\%                                    & -                                     \\
+                            & \cite{8447237}                 & FCN-8                             & 54.73\%      & -                                     & -                             & -                                             & -                                           & -                                   & 66.56\%                           & 42.92\%                     & 54.72\%                                 & -                                     \\
+                            & \cite{7729406}                 & Pruned FCN-2s                     & 53.67\%      & -                                     & 42\%                          & -                                             & -                                           & -                                   & 61\%                              & -                           & 58\%                                    & -                                     \\
+                            & \cite{7729406}                 & FCN-8s                            & 40.67\%      & -                                     & 30\%                          & -                                             & -                                           & -                                   & 49\%                              & -                           & 43\%                                    & -                                     \\
+            \hline
+        \end{tabular}
+        \label{tab:data_results_part_1}
+    \end{table}
 
 \end{landscape}
 
@@ -269,57 +361,57 @@ FCN & \cite{rs15010271} & DeepLabv3+ & 69.28\% & 72.39\% & - & - & - & 56.4\% & 
     \begin{table}[p]
         \caption{Data Results of each method - Part 2}
         \renewcommand{\arraystretch}{1.3}
-\hspace{-2cm}
-\begin{tabular}{
-    p{0.8cm} 
-    >{\centering\arraybackslash}p{.6cm} 
-    p{2.8cm} 
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    >{\centering\arraybackslash}p{1.7cm}
-    }
-\hline
-\textbf{Method} & \textbf{Paper} & \textbf{Model} & \textbf{Avg} & \textbf{F1 Score~\eqref{eq:F1_score}} & \textbf{mIoU~\eqref{eq:mIoU}} & \textbf{Completeness~\eqref{eq:Completeness}} & \textbf{Correctness~\eqref{eq:Correctness}} & \textbf{Quality~\eqref{eq:Quality}} & \textbf{Recall~\eqref{eq:Recall}} & \textbf{IoU~\eqref{eq:IoU}} & \textbf{precision~\eqref{eq:precision}} & \textbf{accuracy~\eqref{eq:accuracy}} \\
-\hline
-& \cite{10.1117/1.JRS.12.016020} & UFCN & 97.25\% & 96.7\% & - & - & - & - & 96.1\% & - & 97.3\% & 98.9\%\\
-& \cite{8447193} & Road-RCF & 93.02\% & 91.5\% & - & - & - & - & 98.5\% & - & 85.8\% & 96.3\%\\
-& \cite{7873262} & CasNet & 91.72\% & - & - & - & - & 88.84\% & 92.14\% & - & 94.18\% & -\\
-& \cite{8447193} & UNet & 90.03\% & 88.9\% & - & - & - & - & 88.5\% & - & 89.3\% & 93.4\%\\
-& \cite{10.1007/978-3-319-60663-7_18} & ELU-SegNet-RL & 85.73\% & 85.7\% & - & - & - & - & 86.1\% & - & 85.4\% & -\\
-& \cite{10.1007/978-3-319-60663-7_18} & ELU-SegNet-R & 81.3\% & 81.2\% & - & - & - & - & 84.7\% & - & 78\% & -\\
-& \cite{rs12182985} & Dice & 80.52\% & 84.97\% & - & - & 83.63\% & - & - & 73.87\% & - & -\\
-& \cite{8605652} & Modified UNet & 80.33\% & 74.54\% & - & - & - & - & 75.48\% & - & 74.15\% & 97.14\%\\
-DCED & \cite{10.1007/978-3-319-60663-7_18} & ELU-SegNet & 79.1\% & 78.8\% & - & - & - & - & 73.3\% & - & 85.2\% & -\\
-& \cite{rs12182985} & Softmax & 78.79\% & 83.55\% & - & - & 81.08\% & - & - & 71.75\% & - & -\\
-& \cite{rs11212499} & DenseUNet & 74.3\% & 74.07\% & - & - & - & - & 70.41\% & 74.47\% & 78.25\% & -\\
-& \cite{rs11212499} & GL-Dense-UNet & 73.82\% & 73.98\% & - & - & - & - & 70.09\% & 72.73\% & 78.48\% & -\\
-& \cite{rs11212499} & FRRN-B & 70.57\% & 66.71\% & - & - & - & - & 64.87\% & 74.22\% & 76.51\% & -\\
-& \cite{rs15010271} & UNet & 68.56\% & 72.10\% & - & - & - & 55.64\% & 64.04\% & - & 82.47\% & -\\
-& \cite{rs11212499} & SegNet & 66.08\% & 62.64\% & - & - & - & - & 71.33\% & 71.91\% & 61.35\% & -\\
-& \cite{rs11212499} & UNet & 65.36\% & 60.78\% & - & - & - & - & 70.81\% & 70.91\% & 58.92\% & -\\
-& \cite{rs16050839} & UNet & 57.5\% & 72\% & 43\%&-&-&-&-&-& - & -\\
-& \cite{8447237} & Deep Res. UNet & 27.31\% & - & - & - & - & - & - & 27.31\% & - & -\\
-\hline
-& \cite{8628717} & pix2pix G:UNet D:ResNET & 87.63\% & - & - & 76.3\% & 100\% & 86.6\% & - & - & - & -\\
-& \cite{8265456} & DH-GAN G:UNet D:PathGAN & 84.05\% & 84.05\% & - & - & - & - & - & - & - & -\\
-GAN & \cite{8265456} & DH-GAN + SBO G:UNet D:PathGAN & 81.74\% & 81.74\% & - & - & - & - & - & - & - & -\\
-& \cite{8106771} & GAN & 84.28\% & - & - & - & - & 80.92\% & 89.81\% & - & 82.12\% & -\\
-& \cite{8265456} & DH-GAN + Greedy G:UNet D:PathGAN & 80.81\% & 80.81\% & - & - & - & - & - & - & - & -\\
-\hline
-& \cite{Wang18062015} & DNN + FSM & 74.67\% & - & - & 78\% & 76\% & 70\% & - & - & - & -\\
-Other & \cite{rs15010271} & FPN & 71.6\% & 75.33\% & - & - & - & 59.75\% & 70.66\% & - & 80.67\% & -\\
-& \cite{10.1117/1.JRS.12.016020} & SVM (ML) & 66.98\% & 56.6\% & - & - & - & - & 90.4\% & - & 41.1\% & 76.8\%\\
-\hline
-\end{tabular}
-\label{tab:data_results_part_2}
-\end{table}
+        \hspace{-2cm}
+        \begin{tabular}{
+            p{0.8cm}
+            >{\centering\arraybackslash}p{.6cm}
+            p{2.8cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            >{\centering\arraybackslash}p{1.7cm}
+            }
+            \hline
+            \textbf{Method} & \textbf{Paper}                      & \textbf{Model}                   & \textbf{Avg} & \textbf{F1 Score~\eqref{eq:F1_score}} & \textbf{mIoU~\eqref{eq:mIoU}} & \textbf{Completeness~\eqref{eq:Completeness}} & \textbf{Correctness~\eqref{eq:Correctness}} & \textbf{Quality~\eqref{eq:Quality}} & \textbf{Recall~\eqref{eq:Recall}} & \textbf{IoU~\eqref{eq:IoU}} & \textbf{precision~\eqref{eq:precision}} & \textbf{accuracy~\eqref{eq:accuracy}} \\
+            \hline
+                            & \cite{10.1117/1.JRS.12.016020}      & UFCN                             & 97.25\%      & 96.7\%                                & -                             & -                                             & -                                           & -                                   & 96.1\%                            & -                           & 97.3\%                                  & 98.9\%                                \\
+                            & \cite{8447193}                      & Road-RCF                         & 93.02\%      & 91.5\%                                & -                             & -                                             & -                                           & -                                   & 98.5\%                            & -                           & 85.8\%                                  & 96.3\%                                \\
+                            & \cite{7873262}                      & CasNet                           & 91.72\%      & -                                     & -                             & -                                             & -                                           & 88.84\%                             & 92.14\%                           & -                           & 94.18\%                                 & -                                     \\
+                            & \cite{8447193}                      & UNet                             & 90.03\%      & 88.9\%                                & -                             & -                                             & -                                           & -                                   & 88.5\%                            & -                           & 89.3\%                                  & 93.4\%                                \\
+                            & \cite{10.1007/978-3-319-60663-7_18} & ELU-SegNet-RL                    & 85.73\%      & 85.7\%                                & -                             & -                                             & -                                           & -                                   & 86.1\%                            & -                           & 85.4\%                                  & -                                     \\
+                            & \cite{10.1007/978-3-319-60663-7_18} & ELU-SegNet-R                     & 81.3\%       & 81.2\%                                & -                             & -                                             & -                                           & -                                   & 84.7\%                            & -                           & 78\%                                    & -                                     \\
+                            & \cite{rs12182985}                   & Dice                             & 80.52\%      & 84.97\%                               & -                             & -                                             & 83.63\%                                     & -                                   & -                                 & 73.87\%                     & -                                       & -                                     \\
+                            & \cite{8605652}                      & Modified UNet                    & 80.33\%      & 74.54\%                               & -                             & -                                             & -                                           & -                                   & 75.48\%                           & -                           & 74.15\%                                 & 97.14\%                               \\
+            DCED            & \cite{10.1007/978-3-319-60663-7_18} & ELU-SegNet                       & 79.1\%       & 78.8\%                                & -                             & -                                             & -                                           & -                                   & 73.3\%                            & -                           & 85.2\%                                  & -                                     \\
+                            & \cite{rs12182985}                   & Softmax                          & 78.79\%      & 83.55\%                               & -                             & -                                             & 81.08\%                                     & -                                   & -                                 & 71.75\%                     & -                                       & -                                     \\
+                            & \cite{rs11212499}                   & DenseUNet                        & 74.3\%       & 74.07\%                               & -                             & -                                             & -                                           & -                                   & 70.41\%                           & 74.47\%                     & 78.25\%                                 & -                                     \\
+                            & \cite{rs11212499}                   & GL-Dense-UNet                    & 73.82\%      & 73.98\%                               & -                             & -                                             & -                                           & -                                   & 70.09\%                           & 72.73\%                     & 78.48\%                                 & -                                     \\
+                            & \cite{rs11212499}                   & FRRN-B                           & 70.57\%      & 66.71\%                               & -                             & -                                             & -                                           & -                                   & 64.87\%                           & 74.22\%                     & 76.51\%                                 & -                                     \\
+                            & \cite{rs15010271}                   & UNet                             & 68.56\%      & 72.10\%                               & -                             & -                                             & -                                           & 55.64\%                             & 64.04\%                           & -                           & 82.47\%                                 & -                                     \\
+                            & \cite{rs11212499}                   & SegNet                           & 66.08\%      & 62.64\%                               & -                             & -                                             & -                                           & -                                   & 71.33\%                           & 71.91\%                     & 61.35\%                                 & -                                     \\
+                            & \cite{rs11212499}                   & UNet                             & 65.36\%      & 60.78\%                               & -                             & -                                             & -                                           & -                                   & 70.81\%                           & 70.91\%                     & 58.92\%                                 & -                                     \\
+                            & \cite{rs16050839}                   & UNet                             & 57.5\%       & 72\%                                  & 43\%                          & -                                             & -                                           & -                                   & -                                 & -                           & -                                       & -                                     \\
+                            & \cite{8447237}                      & Deep Res. UNet                   & 27.31\%      & -                                     & -                             & -                                             & -                                           & -                                   & -                                 & 27.31\%                     & -                                       & -                                     \\
+            \hline
+                            & \cite{8628717}                      & pix2pix G:UNet D:ResNET          & 87.63\%      & -                                     & -                             & 76.3\%                                        & 100\%                                       & 86.6\%                              & -                                 & -                           & -                                       & -                                     \\
+                            & \cite{8265456}                      & DH-GAN G:UNet D:PathGAN          & 84.05\%      & 84.05\%                               & -                             & -                                             & -                                           & -                                   & -                                 & -                           & -                                       & -                                     \\
+            GAN             & \cite{8265456}                      & DH-GAN + SBO G:UNet D:PathGAN    & 81.74\%      & 81.74\%                               & -                             & -                                             & -                                           & -                                   & -                                 & -                           & -                                       & -                                     \\
+                            & \cite{8106771}                      & GAN                              & 84.28\%      & -                                     & -                             & -                                             & -                                           & 80.92\%                             & 89.81\%                           & -                           & 82.12\%                                 & -                                     \\
+                            & \cite{8265456}                      & DH-GAN + Greedy G:UNet D:PathGAN & 80.81\%      & 80.81\%                               & -                             & -                                             & -                                           & -                                   & -                                 & -                           & -                                       & -                                     \\
+            \hline
+                            & \cite{Wang18062015}                 & DNN + FSM                        & 74.67\%      & -                                     & -                             & 78\%                                          & 76\%                                        & 70\%                                & -                                 & -                           & -                                       & -                                     \\
+            Other           & \cite{rs15010271}                   & FPN                              & 71.6\%       & 75.33\%                               & -                             & -                                             & -                                           & 59.75\%                             & 70.66\%                           & -                           & 80.67\%                                 & -                                     \\
+                            & \cite{10.1117/1.JRS.12.016020}      & SVM (ML)                         & 66.98\%      & 56.6\%                                & -                             & -                                             & -                                           & -                                   & 90.4\%                            & -                           & 41.1\%                                  & 76.8\%                                \\
+            \hline
+        \end{tabular}
+        \label{tab:data_results_part_2}
+    \end{table}
 \end{landscape}
 
 \section{Error Measurement Methods}
@@ -392,22 +484,21 @@ Common evaluation metrics include:
 
 \section{Conclusion and Comments}
 
-As shown in \cref{tab:data_results_part_1} and
-\cref{tab:data_results_part_2}, as well as
-\hyperref[seq:Error_Measurement_Methods]{
+As shown in \cref{tab:data_results_part_1} and \cref{tab:data_results_part_2},
+as well as \hyperref[seq:Error_Measurement_Methods]{
     \cref{seq:Error_Measurement_Methods}} there are many different ways to measure
 the efficacy of the many different solutions to this problem. However, as can
 also be seen in \cref{tab:data_results_part_1} and
-\cref{tab:data_results_part_2} different authors opt to use different measurement techniques,
-this makes comparing different authors' results quite difficult. This problem is exacerbated by the
-complexity of these solutions, often containing many different parameters that
-can be tweaked to improve their efficacy, parameters that are seldom shared or
-even mentioned, making comparing even the same solution implemented by
-different authors quite frivolous.
+\cref{tab:data_results_part_2} different authors opt to use different
+measurement techniques, this makes comparing different authors' results quite
+difficult. This problem is exacerbated by the complexity of these solutions,
+often containing many different parameters that can be tweaked to improve their
+efficacy, parameters that are seldom shared or even mentioned, making comparing
+even the same solution implemented by different authors quite frivolous.
 
 For a more in depth analysis of these solutions and the models they propose, a
-standard efficacy measure toolkit should be developed and it's incentivised by
-many different authors.
+standard efficacy measure toolkit should be developed and it's use incentivised
+by many different authors.
 
 Although, despite these issues it is still possible to observe some trends
 within the collected data, these trends hopefully reveal larger solution
@@ -420,7 +511,20 @@ solutions tend to perform about as well as FCN based solutions and worst than
 DCED or GAN based solutions. Even still, FCN based solutions have the capacity
 to outperform CNN based solutions.
 
-Finally, we observe substantial variability in reported results for identical or closely related architectures across different studies. This inconsistency is likely attributable to differences in implementation choices, training procedures, datasets, and evaluation protocols. In many cases, authors may present comparatively weaker baseline architectures in order to highlight the effectiveness of their proposed methods, rather than demonstrating the full potential performance achievable with the same architectural family. As a result, direct performance comparisons between studies should be interpreted with caution, as they may not accurately reflect the true capabilities of the underlying architectures. Making us once again vouche for a creation of a standardized dataset, architecture creation process and training  procedure, ensuring a more reliable way to compare models and results analithically. Until this procedure is in place the use of the Massachusetts dataset is recomended, being to the researchers knowledge the most widly adopted dataset.
+Finally, we observe substantial variability in reported results for identical
+or closely related architectures across different studies. This inconsistency
+is likely attributable to differences in implementation choices, training
+procedures, datasets, and evaluation protocols. In many cases, authors may
+present comparatively weaker baseline architectures in order to highlight the
+effectiveness of their proposed methods, rather than demonstrating the full
+potential performance achievable with the same architectural family. As a
+result, direct performance comparisons between studies should be interpreted
+with caution, as they may not accurately reflect the true capabilities of the
+underlying architectures. Making us once again vouche for a creation of a
+standardized dataset, architecture creation process and training procedure,
+ensuring a more reliable way to compare models and results analithically. Until
+this procedure is in place the use of the Massachusetts dataset is recomended,
+being, to the researchers, knowledge the most widly adopted dataset.
 
 \bibliography{references}
 \end{document}
