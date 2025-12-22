@@ -2,13 +2,13 @@
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
-import imageForms as iF
+import python_files.imageForms as iF
 
 #DLL TO CALL C#
 import sys
 import clr
 #DLL import
-sys.path.append(r"..\Aula 3 - Watershed\files\GPL_LIB")
+sys.path.append("python_files\GPL_LIB")
 clr.AddReference('GPL_lib') #pip install pythonnet
 from GPL_lib import GPL_lib
 
@@ -62,7 +62,7 @@ def GetWatershedByImmersion(img):
     :param image: input image (BGR)
     :return: segmented image
     """
-    from Watershed import Watershed
+    from python_files.Watershed import Watershed
 
     w = Watershed()
     #expects gray scale image

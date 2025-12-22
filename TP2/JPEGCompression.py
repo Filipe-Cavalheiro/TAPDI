@@ -72,16 +72,19 @@ def blockProcessing(imgChannelBlock,luminanceOrChrominance, compFactor):
     return result
 
 def main():
-    COMPRESSION_PER =  30.0
-    img_BGR = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP2\\usb_32x32.png")
+    COMPRESSION_PER =  60.0
+    img_BGR = cv.imread("usb_32x32.png")
     img_BGR = cv.cvtColor(img_BGR, cv.COLOR_BGR2RGB)
 
+    # Ex 2.1
     img_YCrCb = cv.cvtColor(img_BGR, cv.COLOR_BGR2YCrCb)
     imgChannelY, imgChannelCr, imgChannelCb  = cv.split(img_YCrCb)
 
+    #Ex 2.2
     imgChannelCb = cv.resize(imgChannelCb, None, fx=0.5, fy=1, interpolation=cv.INTER_AREA)
     imgChannelCr = cv.resize(imgChannelCr, None, fx=0.5, fy=1, interpolation=cv.INTER_AREA)
 
+    #Ex 2.3
     BLOCK_SIZE = 8
 
     height, width = imgChannelY.shape
@@ -114,8 +117,11 @@ def main():
             resultBlock = blockProcessing(imgChannelBlock,0, COMPRESSION_PER)
             reconstructedCr[i*BLOCK_SIZE : (i+1)*BLOCK_SIZE, j*BLOCK_SIZE : (j+1)*BLOCK_SIZE] = resultBlock
 
+    #Ex 2.4
     reconstructedCb = cv.resize(reconstructedCb ,None,fx=2, fy=1, interpolation=cv.INTER_AREA )
     reconstructedCr = cv.resize(reconstructedCr ,None,fx=2, fy=1, interpolation=cv.INTER_AREA )
+    
+    #Ex 2.5
     img_JPEG = cv.merge((reconstructedY, reconstructedCr, reconstructedCb))
     img_JPEG = cv.cvtColor(img_JPEG, cv.COLOR_YCrCb2BGR)
 

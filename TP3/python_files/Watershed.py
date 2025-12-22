@@ -1,6 +1,7 @@
 import numpy as np
 from collections import deque
 
+
 # Implementation of:
 # Pierre Soille, Luc M. Vincent, "Determining watersheds in digital pictures via
 # flooding simulations", Proc. SPIE 1360, Visual Communications and Image Processing
@@ -118,7 +119,7 @@ if __name__ == "__main__":
    from PIL import Image
    import matplotlib.pyplot as plt
    from scipy.misc import imsave
-
+   
    w = Watershed()
    image = np.array(Image.open(sys.argv[1]))
    labels = w.apply(image)
