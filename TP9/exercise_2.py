@@ -7,7 +7,6 @@ def main():
     # Assign directory
     directory = r'C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\faces'
 
-    "assing cacade model"
     detectorFilename = "haarcascade_frontalface_default.xml"
     haar = cv.CascadeClassifier("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\models\\" + detectorFilename)
 
