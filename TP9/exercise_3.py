@@ -10,17 +10,17 @@ def main():
                 'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
  
 
-    template = cv.imread('C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\car template (1).bmp')
+    template = cv.imread('Aula_9_files/car template (1).bmp')
     assert template is not None, "file could not be read, check with os.path.exists()"
     # w, h = template.shape[::-1]
     
     # Assign directory
-    directory = r'C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\pedestrians'
+    directory = r'Aula_9_files/pedestrians'
 
     # Iterate over files in directory
     for name in os.listdir(directory):
         if name.split('.')[-1] == "mp4":
-            cap = cv.VideoCapture('C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\pedestrians\\' + str(name))
+            cap = cv.VideoCapture('Aula_9_files/pedestrians/' + str(name))
  
             while cap.isOpened():
                 ret, frame = cap.read()
@@ -41,7 +41,7 @@ def main():
                 if cv.waitKey(1) == ord('q'):
                     break
         else:
-            original_img = cv.imread('C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\pedestrians\\' + str(name))
+            original_img = cv.imread('Aula_9_files/pedestrians/' + str(name))
             assert original_img is not None, "file could not be read, check with os.path.exists()"
             original_img = cv.cvtColor(original_img, cv.COLOR_RGB2BGR)
             
@@ -52,6 +52,7 @@ def main():
                 cv.rectangle(original_img, (x,y), (x+w,y+h), (0, 0, 255), 4)
 
             plt.imshow(original_img)
+            plt.axis('off')
             plt.show()
 
 

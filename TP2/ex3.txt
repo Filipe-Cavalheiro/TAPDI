@@ -1,0 +1,7 @@
+Compared to the original image, the recovered image, with a 
+compression factor of 30, is visibly split into chunck with 
+an size og 8x8 pixels.
+
+In adition to this, the original image's object is quite 
+reognizable, whilst the recovered image's object is pretty much 
+unrecognizable. 

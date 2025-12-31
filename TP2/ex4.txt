@@ -1,0 +1,18 @@
+As the compression factor increases, the recovered image 
+becomes more simillar to the original image.
+
+With a complression factor of 50, the 8x8 blocks start to merge 
+into 16x8 blocks. 
+With a compression factor of 100, the recovered 
+image's objects starts to become more recognizable, although still 
+clearly divided into chuncks.
+With a compression factor of 200, the chuncks start to merge 
+into a consistent image.
+With a compression factor of 1000, the recovered image is almost 
+the same as the original image with just a couple color artifacts.
+
+On the other hand, reducing the compression factor reduces the 
+recovered image's recognizability even further, even destroying 
+the image completly with a complression factor of 1, and even 
+creating only a few colored blocks, with a compression factor of 
+10.

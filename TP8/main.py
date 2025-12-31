@@ -1,19 +1,19 @@
-import ImageFFT as ifft
+import python_files.ImageDeconvolution as iD
 import python_files.imageForms as IF
+import python_files.ImageFFT as ifft
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
-import ImageDeconvolution as iD
 
 def main():
     # ex1
-    doggo = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP8\\aula8_1.bmp")
+    doggo = cv.imread("Aula_8_files/aula8_1.bmp")
     doggo_gray = cv.cvtColor(doggo, cv.COLOR_BGR2GRAY)
     mag_doggo_gray, phase_doggo_gray = ifft.GetFFT_Mag_Phase(doggo_gray)
-    # IF.showSideBySideImages(np.fft.fftshift(cv.log(mag_doggo_gray)), np.fft.fftshift(phase_doggo_gray), 'FFT')
+    #IF.showSideBySideImages(np.fft.fftshift(cv.log(mag_doggo_gray)), np.fft.fftshift(phase_doggo_gray), 'FFT')
 
     # ex2
-    birdy = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP8\\aula8_2.bmp")
+    birdy = cv.imread("Aula_8_files/aula8_2.bmp")
     birdy_gray2 = cv.cvtColor(birdy, cv.COLOR_BGR2GRAY)
     mag_birdy_gray2, phase_birdy_gray = ifft.GetFFT_Mag_Phase(birdy_gray2)
     new_img = ifft.GetFFT_Inverse_Mag_Phase(mag_doggo_gray, phase_birdy_gray)
@@ -40,7 +40,7 @@ def main():
     plt.show()"""
 
     #ex5
-    square = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP8\\aula8_3.bmp")
+    square = cv.imread("Aula_8_files/aula8_3.bmp")
     filter = iD.GetFilterConv(True, 10)
     bad_vision_square = cv.filter2D(square, cv.CV_8U, filter, anchor=(np.int32(filter.shape[0]/2), np.int32(filter.shape[1]/2)))
     """ plt.imshow(bad_vision_square, 'gray')
@@ -49,7 +49,7 @@ def main():
     #ex6
     noiseAmp = 2
     attomic_bomb_filter = np.random.rand(square.shape[0], square.shape[1]) * noiseAmp
-    """ plt.imshow(doggo_gray+attomic_bomb_filter, 'gray')
+    """ plt.imshow(square+attomic_bomb_filter, 'gray')
     plt.show() """
 
     #ex7

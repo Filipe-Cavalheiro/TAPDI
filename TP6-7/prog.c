@@ -49,7 +49,7 @@ __kernel void   brightness_and_contrast(int w, int h, int padding, int brightnes
     imageOut[idx] = (uchar4)(pixel.x, pixel.y, pixel.z, pixel.w);
 }
 
-__kernel void sobel(int w, int h,
+__kernel void sobel(int w, int h, int t1, int t2,
                     __read_only image2d_t imageIn,
                     __global uchar4* imageOut)
 {
@@ -84,6 +84,13 @@ __kernel void sobel(int w, int h,
     float4 g = sqrt(convert_float4(gx*gx + gy*gy));
     g = clamp(g, 0.0f, 255.0f);
     uint4 g_uint = convert_uint4(g); 
+
+    float average = (g_uint.x + g_uint.y + g_uint.z) / 3;
+    float diff = abs_diff(g_uint.z, g_uint.y) + abs_diff(g_uint.z, g_uint.x) + abs_diff(g_uint.y, g_uint.x);
+
+    g_uint.x = 255*(diff < t1 && average > t2);
+    g_uint.y = 255*(diff < t1 && average > t2);
+    g_uint.z = 255*(diff < t1 && average > t2);
     
     int idx = y * w + x;
     imageOut[idx] = (uchar4)(g_uint.x, g_uint.y, g_uint.z, 255); 

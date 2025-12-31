@@ -6,7 +6,7 @@ import os
 def main():
     # assing cacade model
     detectorFilename = "haarcascade_frontalface_default.xml"
-    haar = cv.CascadeClassifier("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\models\\" + detectorFilename)
+    haar = cv.CascadeClassifier("Aula_9_files/models/" + detectorFilename)
 
     cap = cv.VideoCapture(0)
     if not cap.isOpened():

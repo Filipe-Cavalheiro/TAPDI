@@ -10,18 +10,18 @@ def main():
                 'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
  
 
-    template = cv.imread('C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\car template (1).bmp')
+    template = cv.imread('Aula_9_files/car template (1).bmp')
     assert template is not None, "file could not be read, check with os.path.exists()"
-    w, h = template.shape[::-1]
+    w, h, _ = template.shape
     
     # Assign directory
-    directory = r'C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\road'
+    directory = 'Aula_9_files/road'
 
     # Iterate over files in directory
     for name in os.listdir(directory):
-        print('C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\road\\' + str(name))
+        print('Aula_9_files/road/' + str(name))
 
-        original_img = cv.imread('C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP9\\aula9\\road\\' + str(name))
+        original_img = cv.imread('Aula_9_files/road/' + str(name))
         assert original_img is not None, "file could not be read, check with os.path.exists()"
     
         for meth in methods:

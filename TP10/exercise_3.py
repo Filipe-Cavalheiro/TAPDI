@@ -1,5 +1,6 @@
-import tensorflow as tf
+from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 from tensorflow.keras import layers, models
+import tensorflow as tf
 import numpy as np
 import cv2
 
@@ -25,9 +26,10 @@ model.compile(optimizer='adam',
 model.fit(train_images, train_labels, epochs=5, batch_size=64, validation_data=(test_images, test_labels))
 
 # Step 5: Save the trained model
-save_path = ".TP10\\mnist_model.h5"
+save_path = "mnist_model.keras"
 model.save(save_path)
-print("Model saved to " + save_path)
+print("Model saved to " + save_path) 
+
 
 # Step 6: Load the model in OpenCV
 # Convert the TensorFlow model to OpenCV format (using DNN module in OpenCV)
@@ -35,12 +37,12 @@ print("Model saved to " + save_path)
 
 # First, we need to convert the model to a format that OpenCV can read:
 # Use TensorFlow's SavedModel format
-"""
-model.save(".TP10\\mnist_saved_model")
+
+#model.save(".TP10\\mnist_saved_model")
 
 # Step 7: Load the model in OpenCV
 # OpenCV DNN module can load models in the TensorFlow SavedModel format
-net = cv2.dnn.readNetFromTensorflow(".\\mnist_saved_model\\saved_model.pb")
+net = cv2.dnn.read("mnist_model.keras")
 
 # Step 8: Test the model with OpenCV
 # Prepare an image for testing (let's take the first image from the test set)
@@ -59,4 +61,3 @@ print("Output from OpenCV DNN forward pass: ", output)
 # Get the predicted digit
 predicted_digit = np.argmax(output)
 print(f"Predicted digit: {predicted_digit}")
-"""

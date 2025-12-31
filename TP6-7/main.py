@@ -16,7 +16,7 @@ def main():
         ctx = cl.Context(devices) # or dev_type=cl.device_type.ALL)
         global commQ
         commQ = cl.CommandQueue(ctx,device)
-        file = open("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP6-7\\prog.c","r")
+        file = open("prog.c","r")
         global prog
         prog = cl.Program(ctx,file.read())
         prog.build()
@@ -24,10 +24,10 @@ def main():
         print(e)
         return False
 
-    """ try:
+    """try:
         start_time = time.time()
         # === LOAD IMAGE ===
-        img = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP6\\Aula_4_files\\aula4-1.jpg")
+        img = cv.imread("Aula_6-7_files\\aula4-1.jpg")
         h, w, c = img.shape
         img_rgba = cv.cvtColor(img, cv.COLOR_BGR2BGRA)
 
@@ -54,7 +54,7 @@ def main():
         
         width_height_ratio = int(w/h)
         # Launch kernel (1 work-item per pixel)
-        local_work_size_var  = [width_height_ratio*32, 32]
+        local_work_size_var  = [width_height_ratio*16, 16]
         cl.enqueue_nd_range_kernel(commQ, kernel, global_work_size=(math.ceil(w/local_work_size_var[0])*local_work_size_var[0], math.ceil(h/local_work_size_var[1])*local_work_size_var[1]), local_work_size=local_work_size_var)
         cl.enqueue_copy(commQ, output, out_buf)
 
@@ -72,26 +72,31 @@ def main():
     try:
         start_time = time.time()
         # === LOAD IMAGE ===
-        img = cv.imread("C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP6-7\\Aula_4_files\\aula4-1.jpg")
+        img = cv.imread("Aula_6-7_files\\aula4-1.jpg")
         
-        img_rgba = cv.cvtColor(img, cv.COLOR_BGR2BGRA)
-        h, w, c = img_rgba.shape
+        img_bgra = cv.cvtColor(img, cv.COLOR_BGR2RGBA)
+        h, w, c = img_bgra.shape
+
+        t1 = 100
+        t2 = 50
 
         fmt = cl.ImageFormat(cl.channel_order.RGBA, cl.channel_type.UNSIGNED_INT8)
 
-        imageIn = cl.create_image(ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, fmt, shape=(w, h), hostbuf=img_rgba)
+        imageIn = cl.create_image(ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, fmt, shape=(w, h), hostbuf=img_bgra)
 
-        output = np.empty_like(img_rgba)
+        output = np.empty_like(img_bgra)
         out_buf = cl.Buffer(ctx, cl.mem_flags.WRITE_ONLY, output.nbytes)
 
         kernel = prog.sobel
 
         kernel.set_arg(0, np.int32(w))
         kernel.set_arg(1, np.int32(h))
-        kernel.set_arg(2, imageIn)
-        kernel.set_arg(3, out_buf)
+        kernel.set_arg(2, np.int32(t1))
+        kernel.set_arg(3, np.int32(t2))
+        kernel.set_arg(4, imageIn)
+        kernel.set_arg(5, out_buf)
         
-        local_work_size_var  = [32, 32]
+        local_work_size_var  = [16, 16]
         cl.enqueue_nd_range_kernel(commQ, kernel, global_work_size=(math.ceil(w/local_work_size_var[0])*local_work_size_var[0], math.ceil(h/local_work_size_var[1])*local_work_size_var[1]), local_work_size=local_work_size_var)
         #cl.enqueue_nd_range_kernel(commQ, kernel, global_work_size=[96, 400], local_work_size=[32, 8])
         cl.enqueue_copy(commQ, output, out_buf)
@@ -107,10 +112,10 @@ def main():
     except Exception as e:
         print("Error:", e)
         
-    """   
-    # === LOAD IMAGE ===
+      
+    """ # === LOAD IMAGE ===
     start_time = time.time()
-    img = cv.imread(r"C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP6\\Aula_4_files\\aula4-1.jpg")
+    img = cv.imread("\\Aula_6-7_files\\aula4-1.jpg")
 
     if img is None:
         raise FileNotFoundError("Image not found. Check the path.")
@@ -137,7 +142,7 @@ def main():
     cv.imshow("Adjusted", laplacian)
     print("- cpu: execute --- %s seconds ---" % (time.time() - start_time))
     cv.waitKey(0)
-    cv.destroyAllWindows()
-    return True """
+    cv.destroyAllWindows() """
+    return True
 
 main()

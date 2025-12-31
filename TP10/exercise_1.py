@@ -8,7 +8,7 @@ def getFaceBox(frame, conf_threshold=0.7):
     frameHeight = frameOpencvDnn.shape[0]
     frameWidth = frameOpencvDnn.shape[1]
 
-    directory = r'TP10\\aula 10-images_files\\models\\'
+    directory = r'Aula_10_files/Aula_10_images_files/models/'
 
     # Open DNN model
     modelFile = directory + "opencv_face_detector_uint8.pb"
@@ -40,11 +40,11 @@ def getFaceBox(frame, conf_threshold=0.7):
 
 def main():
     # Assign directory
-    directory = r'C:\\Users\\caval\\Documents\\Universidade\\9_Semestre\\TAPDI\\TP10\\aula9\\faces'
+    directory = r'Aula_10_files/Aula_9_files/faces'
 
     # Iterate over files in directory
     for name in os.listdir(directory):
-        original_img = cv.imread(directory + "\\" + str(name))
+        original_img = cv.imread(directory + "/" + str(name))
         assert original_img is not None, "file could not be read, check with os.path.exists()"
         frameOpencvDnn, box = getFaceBox(original_img)
         frameOpencvDnn = cv.cvtColor(frameOpencvDnn, cv.COLOR_BGR2RGB)

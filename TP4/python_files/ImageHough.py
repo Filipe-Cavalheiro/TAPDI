@@ -16,7 +16,7 @@ def HoughPlane(img, minAngle, maxAngle, angleSpacing):
     """
 
     # Rho and Theta ranges
-    thetas = np.deg2rad(np.arange(minAngle, maxAngle,angleSpacing))
+    thetas = np.deg2rad(np.arange(minAngle, maxAngle, angleSpacing))
     width, height = img.shape
     diag_len = np.uint32(np.ceil(np.sqrt(width * width + height * height)))   # max_dist
     rhos = np.linspace(-diag_len/2, diag_len/2, diag_len)
@@ -50,8 +50,8 @@ def ShowHoughLines(img, imgOriginal, thresh):
     """
 
     #TODO: configure opencv HoughLines
-    #lines =
-
+    lines = cv.HoughLines(img, 1, np.pi/180, thresh)
+    
     imgOriginalRes = np.copy(imgOriginal)
 
     if lines is not None:
@@ -69,7 +69,7 @@ def ShowHoughLines(img, imgOriginal, thresh):
     return imgOriginalRes
 
 
-def ShowHoughLineSegments(img, imgOriginal, thresh):
+def ShowHoughLineSegments(img, imgOriginal, thresh, minLength, maxGap):
     """
     Draw Hough lines openCV
     :param img: gray scale
@@ -77,6 +77,7 @@ def ShowHoughLineSegments(img, imgOriginal, thresh):
     """
 
     # TODO: configure opencv HoughLines
+    linesP = cv.HoughLinesP(img, 1, np.pi/180, thresh, minLineLength=minLength, maxLineGap=maxGap)
 
     imgOriginalRes = np.copy(imgOriginal)
 
@@ -88,7 +89,7 @@ def ShowHoughLineSegments(img, imgOriginal, thresh):
     return imgOriginalRes
 
 
-def ShowHoughCircles(img, imgOriginal, thresh):
+def ShowHoughCircles(img, imgOriginal, thresh1, thresh2, minRadius, maxRadius, minDistCenterbCircles, circleThick):
     """
     Draw Hough lines openCV
     :param img: gray scale
@@ -96,17 +97,19 @@ def ShowHoughCircles(img, imgOriginal, thresh):
     """
 
     #TODO: configure opencv HoughCircles
-
+    canny = cv.Canny(img, thresh1, thresh2)
+    circles = cv.HoughCircles(canny, cv.HOUGH_GRADIENT,1,minDistCenterbCircles,
+                            param1=50,param2=30,minRadius=minRadius,maxRadius=maxRadius)
 
     imgOriginalRes = np.copy(imgOriginal)
 
     if circles is not None:
         for i in range(0, len(circles[0])):
-            center = (np.int32(circles[0][i][0]),np.int32( circles[0][i][1]))
-            radius = np.int32( circles[0][i][2])
+            center = (np.int32(circles[0][i][0]),np.int32(circles[0][i][1]))
+            radius = np.int32(circles[0][i][2])
 
             # circle outline
-            cv.circle(imgOriginalRes, center, radius, (0, 0, 255), 1)
+            cv.circle(imgOriginalRes, center, radius, (0, 0, 255), circleThick)
 
     return imgOriginalRes
 
@@ -128,7 +131,9 @@ def ShowVideo(filename):
         if (not ret):
             break
 
-        #TODO image processing for showing Hough Lines
+        imgCanny = cv.Canny(vidFrame, 150, 100)
+
+        vidFrame = ShowHoughLineSegments(imgCanny, vidFrame, 20, 20, 5)
 
 
         cv.imshow("Video", vidFrame)
@@ -141,6 +146,6 @@ def ShowVideo(filename):
 # ############################################################################
 
 #Open image
-pathname = "..\\Aula 4 - Hough\\Aula 4\\"
+pathname = "..\\Aula_4_files\\Aula 4\\"
 
 # TODO Add exercises
