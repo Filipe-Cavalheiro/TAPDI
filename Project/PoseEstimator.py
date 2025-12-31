@@ -1,4 +1,5 @@
 import cv2 as cv
+import pyopencl as cl
 
 class PoseEstimator:
     def __init__(self):
@@ -6,8 +7,10 @@ class PoseEstimator:
         self.img_width = 1280
         self.img_height = 720
 
-        self.protoFile = ".\\pose_models\\mpi\\pose_deploy_linevec_faster_4_stages.prototxt"
-        self.weightsFile = ".\\pose_models\\mpi\\pose_iter_160000.caffemodel"
+        # open pose #
+
+        self.protoFile = ".\\Project\\pose_models\\mpi\\pose_deploy_linevec_faster_4_stages.prototxt"
+        self.weightsFile = ".\\Project\\pose_models\\mpi\\pose_iter_160000.caffemodel"
 
         self.POSE_PAIRS = [
             ("Head", "Neck"),
@@ -36,15 +39,51 @@ class PoseEstimator:
             "Chest": 14
         }
 
-        self.THRESHOLD = 0.05
+        self.THRESHOLD = 0.05 # this is the openpose THRESHOLD
+
+        # haar #
 
         self.haar = cv.CascadeClassifier(
-            ".\\haar_models\\haarcascade_frontalface_default.xml"
+            ".\\Project\\haar_models\\haarcascade_frontalface_default.xml"
         )
+
+        # template matching #
+
+        self.face_template_location = ".\\Project\\face_template.png"
+        
         ### End Settings #######################
 
         self._init_camera()
         self._init_network()
+        self._init_opencl()
+        self._init_kernels()
+
+    def _init_opencl(self):
+        try:
+            plaforms = cl.get_platforms()
+            global plaform
+            plaform = plaforms[0]
+            devices = plaform.get_devices()
+            global device
+            device = devices[0]
+            global ctx
+            self.ctx = cl.Context(devices) # or dev_type=cl.device_type.ALL)
+            global commQ
+            self.commQ = cl.CommandQueue(self.ctx,device)
+            file = open(".\\Project\\prog.c","r")
+            global prog
+            try:
+                self.prog  = cl.Program(self.ctx, file.read()).build()
+            except Exception as e:
+                print("Error:", e)
+        except Exception as e:
+            print(e)
+            return False
+        
+    def _init_kernels(self):
+        self.kernel_subtract_val_to_img = cl.Kernel(self.prog, "subtract_val_to_img")
+        self.kernel_img_mult = cl.Kernel(self.prog, "img_mult_pix2pix")
+        self.kernel_img_mult_no_attomic = cl.Kernel(self.prog, "img_mult_pix2pix_no_attomic")
 
     def _init_camera(self):
         self.cap = cv.VideoCapture(0)
