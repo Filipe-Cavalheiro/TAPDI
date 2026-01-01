@@ -42,28 +42,36 @@ def subtract_template_avg(pose: PoseEstimator, versobe: bool = False):
 
         if versobe:
             img_out = output.astype(np.uint8)
-            img_out = cv.cvtColor(img_out, cv.COLOR_RGBA2RGB)
+            img_out_rgb = cv.cvtColor(img_out, cv.COLOR_RGBA2BGR)
             
-            plt.imshow(img_out)
+            plt.imshow(img_out_rgb)
             plt.axis('off')
             plt.show()
 
-        sum_square_template = np.array([np.sum(np.square(np.array(x).flatten())) for x in split_img])
+            img_out_gray = cv.cvtColor(img_out, cv.COLOR_RGBA2GRAY)
+            cv.imshow("frame", img_out_gray)
+            cv.waitKey(0)
 
-        return output, np.mean(sum_square_template[:3])
+        face_template_gray = cv.cvtColor(face_template, cv.COLOR_RGBA2GRAY)
+        sum_square_template = np.sum(np.square(np.array(face_template_gray).flatten()))
+
+        return output, sum_square_template
 
     except Exception as e:
         print("From subtract_template_avg error:", e)
 
-
-def correlation_coefficient(input_image, template_minus_avg, pose: PoseEstimator, verbose: bool = False):
-    temp_h, temp_w, _ = template_minus_avg.shape
+def normalized_correlation_coefficient(input_image, template_minus_avg, template_sum_mean, pose: PoseEstimator, verbose: bool = False):
+    
+    template_minus_avg = cv.cvtColor(template_minus_avg, cv.COLOR_RGBA2GRAY)
+    input_image = cv.cvtColor(input_image, cv.COLOR_BGR2GRAY)
 
     #input_image = cv.resize(input_image, (640, 480))
+    temp_h, temp_w = template_minus_avg.shape
+    img_h, img_w = input_image.shape
 
-    img_h, img_w, _ = input_image.shape
-
-    img_format = cl.ImageFormat(cl.channel_order.RGBA, cl.channel_type.FLOAT)
+    #images are gray scale
+    img_format = cl.ImageFormat(cl.channel_order.R, cl.channel_type.FLOAT)
+    img_format_uint8 = cl.ImageFormat(cl.channel_order.R, cl.channel_type.UNSIGNED_INT8)
 
     # Upload template
     imageIn_template = cl.create_image(
@@ -75,151 +83,48 @@ def correlation_coefficient(input_image, template_minus_avg, pose: PoseEstimator
     )
 
     # Allocate device-side images
-    imageIn_sub_img = cl.Image(pose.ctx, cl.mem_flags.READ_ONLY, img_format, shape=(temp_w, temp_h))
-    img_intermediate = cl.Image(pose.ctx, cl.mem_flags.READ_WRITE, img_format, shape=(temp_w, temp_h))
-
-    # Output correlation map
-    output_buff = np.zeros(4, dtype=np.ulong)
-    buff_out_final = cl.Buffer(pose.ctx, cl.mem_flags.WRITE_ONLY, output_buff.nbytes)
-    output_img = np.zeros((img_h - temp_h + 1, img_w - temp_w + 1), dtype=np.ulong)
-
-    kernel1 = pose.kernel_subtract_val_to_img
-    kernel2 = pose.kernel_img_mult
-
-    local_work_size = (32, 32)
-    global_work_size = ( 
-        math.ceil(temp_w / local_work_size[0]) * local_work_size[0],
-        math.ceil(temp_h / local_work_size[1]) * local_work_size[1]
-    )
+    imageIn = cl.Image(pose.ctx, cl.mem_flags.READ_ONLY, img_format, shape=(img_w, img_h))
     
-    for y in range(0, img_h - temp_h + 1, 1):
-        for x in range(0, img_w - temp_w + 1, 1):
-            sub_img = input_image[y:y+temp_h, x:x+temp_w]           # get sub img
-            sub_img_rgba = cv.cvtColor(sub_img, cv.COLOR_BGR2RGBA)  # pass from BGR to RGBA
-            sub_img_rgba = sub_img_rgba.astype(np.float32)  # pass from uint8 to float
-
-            # Precompute template average for subtraction
-            split_sub_image = cv.split(sub_img_rgba)
-            sub_img_pre_calc = np.array([np.sum(np.array(x).flatten())/(temp_w*temp_h) for x in split_sub_image])
-
-            # Update device memory for the current sub-image
-            cl.enqueue_copy(pose.commQ, imageIn_sub_img, sub_img_rgba, origin=(0, 0, 0), region=(temp_w, temp_h, 1))
-
-            # Kernel 1: template subtraction
-            kernel1.set_arg(0, np.int32(temp_w))
-            kernel1.set_arg(1, np.int32(temp_h))
-            kernel1.set_arg(2, sub_img_pre_calc)
-            kernel1.set_arg(3, imageIn_sub_img)
-            kernel1.set_arg(4, img_intermediate)
-            cl.enqueue_nd_range_kernel(pose.commQ, kernel1, global_work_size, local_work_size)
-            
-            # Kernel 2: multiply template_minus_avg with sub_img_rgba_minus_avg
-            kernel2.set_arg(0, np.int32(temp_w))
-            kernel2.set_arg(1, np.int32(temp_h))
-            kernel2.set_arg(2, img_intermediate)
-            kernel2.set_arg(3, imageIn_template)
-            kernel2.set_arg(4, buff_out_final)
-            cl.enqueue_nd_range_kernel(pose.commQ, kernel2, global_work_size, local_work_size)
-
-            # Copy back only the final result
-            cl.enqueue_copy(pose.commQ, output_buff, buff_out_final)
-            pose.commQ.finish()
-
-            output_img[y, x] = np.mean(output_buff[:3])
-    
-    if verbose:
-        print(output_img)
-        """ cv.imshow("frame", output_img)
-        cv.waitKey(0) """
-
-    return output_img
-
-def correlation_coefficient_no_attomic(input_image, template_minus_avg, template_sum_mean, pose: PoseEstimator, verbose: bool = False):
-    temp_h, temp_w, _ = template_minus_avg.shape
-
-    #input_image = cv.resize(input_image, (640, 480))
-
-    img_h, img_w, _ = input_image.shape
-
-    img_format = cl.ImageFormat(cl.channel_order.RGBA, cl.channel_type.FLOAT)
-
-    # Upload template
-    imageIn_template = cl.create_image(
-        pose.ctx,
-        cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
-        img_format,
-        shape=(temp_w, temp_h),
-        hostbuf=template_minus_avg
-    )
-
-    # Allocate device-side images
-    imageIn_sub_img = cl.Image(pose.ctx, cl.mem_flags.READ_ONLY, img_format, shape=(temp_w, temp_h))
-    img_intermediate = cl.Image(pose.ctx, cl.mem_flags.READ_WRITE, img_format, shape=(temp_w, temp_h))
-
     # Output correlation map
-    output_sub_img = np.zeros((temp_h ,  temp_w, 4), dtype=np.float32)
+    output_buff_shape = [img_h - temp_h + 1 ,  img_w - temp_w + 1]
+    output_buff = np.zeros([output_buff_shape[0], output_buff_shape[1]], dtype=np.uint8)
     imageOut = cl.create_image(
         pose.ctx,
         cl.mem_flags.WRITE_ONLY | cl.mem_flags.COPY_HOST_PTR,
-        img_format,
-        shape=(temp_w, temp_h),
-        hostbuf=output_sub_img
+        img_format_uint8,
+        shape = (output_buff_shape[1], output_buff_shape[0]),
+        hostbuf = output_buff
     )
 
-    output_img = np.zeros((img_h - temp_h + 1, img_w - temp_w + 1), dtype=np.float16)
+    kernel = pose.kernel_ncc_tiled
 
-    kernel1 = pose.kernel_subtract_val_to_img
-    kernel2 = pose.kernel_img_mult_no_attomic
-
-    local_work_size = (32, 32)
-    global_work_size = ( 
-        math.ceil(temp_w / local_work_size[0]) * local_work_size[0],
-        math.ceil(temp_h / local_work_size[1]) * local_work_size[1]
+    local_work_size = (8, 8)
+    global_work_size = (
+        math.ceil((output_buff_shape[1]) / local_work_size[0]) * local_work_size[0],
+        math.ceil((output_buff_shape[0]) / local_work_size[1]) * local_work_size[1]
     )
+
+
+    input_image = input_image.astype(np.float32) 
+    # Update device memory for the current sub-image
+    cl.enqueue_copy(pose.commQ, imageIn, input_image, origin=(0,0,0), region=(img_w, img_h, 1), is_blocking=True)
+
+    # Kernel: Tiled Normal Correlation Coefficient (ncc_tiled)
+    kernel.set_arg(0, np.int32(img_w))
+    kernel.set_arg(1, np.int32(img_h))
+    kernel.set_arg(2, np.float32(template_sum_mean))
+    kernel.set_arg(3, imageIn)
+    kernel.set_arg(4, imageIn_template)
+    kernel.set_arg(5, imageOut)
     
-    for y in range(0, img_h - temp_h + 1, 1):
-        for x in range(0, img_w - temp_w + 1, 1):
-            sub_img = input_image[y:y+temp_h, x:x+temp_w]           # get sub img
-            sub_img_rgba = cv.cvtColor(sub_img, cv.COLOR_BGR2RGBA)  # pass from BGR to RGBA
-            sub_img_rgba = sub_img_rgba.astype(np.float32)  # pass from uint8 to float
+    cl.enqueue_nd_range_kernel(pose.commQ, kernel, global_work_size, local_work_size)
 
-            # Precompute template average for subtraction
-            split_sub_image = cv.split(sub_img_rgba)
-            sub_img_pre_calc = np.array([np.sum(np.array(x).flatten())/(temp_w*temp_h) for x in split_sub_image])
-            sum_square_sub = np.array([np.sum(np.square(np.array(x).flatten())) for x in split_sub_image])
-
-            # Update device memory for the current sub-image
-            cl.enqueue_copy(pose.commQ, imageIn_sub_img, sub_img_rgba, origin=(0, 0, 0), region=(temp_w, temp_h, 1))
-
-            # Kernel 1: template subtraction
-            kernel1.set_arg(0, np.int32(temp_w))
-            kernel1.set_arg(1, np.int32(temp_h))
-            kernel1.set_arg(2, sub_img_pre_calc)
-            kernel1.set_arg(3, imageIn_sub_img)
-            kernel1.set_arg(4, img_intermediate)
-            cl.enqueue_nd_range_kernel(pose.commQ, kernel1, global_work_size, local_work_size)
-            
-            # Kernel 2: multiply template_minus_avg with sub_img_rgba_minus_avg
-            kernel2.set_arg(0, np.int32(temp_w))
-            kernel2.set_arg(1, np.int32(temp_h))
-            kernel2.set_arg(2, img_intermediate)
-            kernel2.set_arg(3, imageIn_template)
-            kernel2.set_arg(4, imageOut)
-            cl.enqueue_nd_range_kernel(pose.commQ, kernel2, global_work_size, local_work_size)
-
-            # Copy back only the final result
-            cl.enqueue_copy(pose.commQ, output_sub_img, imageOut, origin=(0,0,0), region=(temp_w,temp_h,1))
-            pose.commQ.finish()
-
-            split_sub_image = cv.split(output_sub_img)
-            flat_minus_avg = np.array([np.sum((np.array(x).flatten())) for x in split_sub_image])
-
-            output_img[y, x] = (np.mean(flat_minus_avg[:3]) / (np.sqrt(template_sum_mean * np.mean(sum_square_sub[:3]))) + 1) * 127.5
+    cl.enqueue_copy(pose.commQ, output_buff, imageOut, origin=(0,0,0), region=(output_buff_shape[1], output_buff_shape[0], 1))
+    pose.commQ.finish()
     
     if verbose:
-        #print(output_img, np.mean(sum_square_sub[:3]))
-        output_img = output_img.astype(np.uint8)
-        cv.imshow("frame", output_img)
+        print(output_buff)
+        cv.imshow("frame", output_buff)
         cv.waitKey(0)
 
-    return output_img
+    return output_buff

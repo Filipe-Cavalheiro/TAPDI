@@ -108,35 +108,7 @@ __kernel void subtract_val_to_img(
     write_imagef(imageOut, (int2)(x, y), p - val_to_sub);
 }
 
-
 __kernel void img_mult_pix2pix(
-    int w, int h,
-    __read_only image2d_t imageIn_1,
-    __read_only image2d_t imageIn_2,
-    __global atomic_ulong  *imageOut
-)
-{
-    const sampler_t sampler =
-        CLK_NORMALIZED_COORDS_FALSE |
-        CLK_ADDRESS_CLAMP_TO_EDGE |
-        CLK_FILTER_NEAREST;
-
-    int x = get_global_id(0);
-    int y = get_global_id(1);
-
-    if (x >= w || y >= h) return;
-
-    float4 p_1 = read_imagef(imageIn_1, sampler, (int2)(x, y));
-    float4 p_2 = read_imagef(imageIn_2, sampler, (int2)(x, y));
-    ulong4 p_1_long = convert_ulong4(p_1);
-    ulong4 p_2_long = convert_ulong4(p_2);
-    atomic_add(&imageOut[0], p_1_long.x * p_2_long.x);
-    atomic_add(&imageOut[1], p_1_long.y * p_2_long.y);
-    atomic_add(&imageOut[2], p_1_long.z * p_2_long.z);
-    atomic_add(&imageOut[3], p_1_long.w * p_2_long.w);
-}
-
-__kernel void img_mult_pix2pix_no_attomic(
     int w, int h,
     __read_only image2d_t imageIn_1,
     __read_only image2d_t imageIn_2,
@@ -160,4 +132,75 @@ __kernel void img_mult_pix2pix_no_attomic(
     float4 result = p_1 * p_2;
 
     write_imagef(out_put_mult, (int2)(x, y), result);
+}
+
+#define LOCAL_H 8
+#define LOCAL_W 8
+#define TEMP_H 105
+#define TEMP_W 90
+
+__kernel void ncc_tiled(
+    int img_w,
+    int img_h,
+    float template_sum_mean,
+    __read_only image2d_t inputImage,
+    __read_only image2d_t templateImage_min_avg,
+    __write_only image2d_t outputImage) 
+{
+    const sampler_t sampler =
+        CLK_NORMALIZED_COORDS_FALSE |
+        CLK_ADDRESS_CLAMP_TO_EDGE |
+        CLK_FILTER_NEAREST;
+
+    const int global_x = get_global_id(0);
+    const int global_y = get_global_id(1);
+
+    const int group_x = get_group_id(0) * LOCAL_W;
+    const int group_y = get_group_id(1) * LOCAL_H;
+
+    const int local_x = get_local_id(0);
+    const int local_y = get_local_id(1);
+
+    // Shared tile in local memory
+    __local float tile[LOCAL_H + TEMP_H - 1][LOCAL_W + TEMP_W - 1];
+
+    /* Load tile */
+    for (int y = local_y; y < LOCAL_H + TEMP_H - 1; y += LOCAL_H) {
+        for (int x = local_x; x < LOCAL_W + TEMP_W - 1; x += LOCAL_W) {
+            int2 coord = (int2)(group_x + x, group_y + y);
+            float4 pix = read_imagef(inputImage, sampler, coord);
+            tile[y][x] = pix.x; // take only the first channel (grayscale)
+        }
+    }
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    /* Skip out-of-bounds work-items */
+    if (global_x >= img_w - TEMP_W + 1 || global_y >= img_h - TEMP_H + 1) return;
+
+    // Compute sub-image average
+    float sub_img_avg = 0.0f;
+    float sub_img_sum_square = 0.0f;
+    for (int template_y = 0; template_y < TEMP_H; ++template_y) {
+        for (int template_x = 0; template_x < TEMP_W; ++template_x) {
+            sub_img_avg += tile[local_y + template_y][local_x + template_x];
+            sub_img_sum_square += tile[local_y + template_y][local_x + template_x]*tile[local_y + template_y][local_x + template_x];
+        }
+    }
+    sub_img_avg /= (TEMP_H * TEMP_W);
+
+    // Compute correlation
+    float correlation = 0.0f;
+    for (int template_y = 0; template_y < TEMP_H; ++template_y) {
+        for (int template_x = 0; template_x < TEMP_W; ++template_x) {
+            float sub_pix = tile[local_y + template_y][local_x + template_x];
+            float tmp_min_avg = read_imagef(templateImage_min_avg, sampler, (int2)(template_x, template_y)).x;
+            correlation += (sub_pix - sub_img_avg) * tmp_min_avg;
+        }
+    }
+
+    correlation = correlation/sqrt(template_sum_mean * sub_img_sum_square);
+    correlation = (correlation + 1) * 127.5f;
+
+    write_imageui(outputImage, (int2)(global_x, global_y), (uint4)((uint)correlation, 0, 0, 255));
 }

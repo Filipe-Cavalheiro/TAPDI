@@ -83,7 +83,7 @@ class PoseEstimator:
     def _init_kernels(self):
         self.kernel_subtract_val_to_img = cl.Kernel(self.prog, "subtract_val_to_img")
         self.kernel_img_mult = cl.Kernel(self.prog, "img_mult_pix2pix")
-        self.kernel_img_mult_no_attomic = cl.Kernel(self.prog, "img_mult_pix2pix_no_attomic")
+        self.kernel_ncc_tiled = cl.Kernel(self.prog, "ncc_tiled")
 
     def _init_camera(self):
         self.cap = cv.VideoCapture(0)
