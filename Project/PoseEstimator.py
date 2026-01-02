@@ -49,7 +49,7 @@ class PoseEstimator:
 
         # template matching #
 
-        self.face_template_location = ".\\Project\\face_template.png"
+        self.face_template_location = ".\\Project\\face_template_2.png"
         
         ### End Settings #######################
 
@@ -84,6 +84,7 @@ class PoseEstimator:
         self.kernel_subtract_val_to_img = cl.Kernel(self.prog, "subtract_val_to_img")
         self.kernel_img_mult = cl.Kernel(self.prog, "img_mult_pix2pix")
         self.kernel_ncc_tiled = cl.Kernel(self.prog, "ncc_tiled")
+        self.kernel_linear_transform_img = cl.Kernel(self.prog, "linear_transform_img")
 
     def _init_camera(self):
         self.cap = cv.VideoCapture(0)
