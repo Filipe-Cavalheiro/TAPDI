@@ -5,7 +5,7 @@ import math
 import matplotlib.pyplot as plt
 from PoseEstimator import PoseEstimator
 
-def subtract_template_avg(pose: PoseEstimator, versobe: bool = False):
+def subtract_template_avg(pose: PoseEstimator, verbose: bool = False):
     face_template = cv.imread(pose.face_template_location)
     face_template_rgba = cv.cvtColor(face_template, cv.COLOR_BGR2RGBA)
 
@@ -40,7 +40,7 @@ def subtract_template_avg(pose: PoseEstimator, versobe: bool = False):
         cl.enqueue_copy(pose.commQ, output, imageOut, origin=(0, 0, 0), region=(w, h, 1))
         pose.commQ.finish()
 
-        if versobe:
+        if verbose:
             img_out = output.astype(np.uint8)
             img_out_rgb = cv.cvtColor(img_out, cv.COLOR_RGBA2BGR)
             
@@ -128,3 +128,47 @@ def normalized_correlation_coefficient(input_image, template_minus_avg, template
         cv.waitKey(0)
 
     return output_buff
+
+def linear_transform_img(pose: PoseEstimator, input_image: np.array, img_shift: np.array, verbose: bool = False):
+    img_h, img_w = input_image.shape[:2]
+    input_image = cv.cvtColor(input_image, cv.COLOR_BGR2RGBA)
+
+    try:
+        img_format_uint = cl.ImageFormat(cl.channel_order.RGBA, cl.channel_type.UNSIGNED_INT8)
+
+        # Create OpenCL images
+        imageIn = cl.Image(pose.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, 
+                           img_format_uint, shape=(img_w, img_h), 
+                           hostbuf=input_image)
+        
+        imageOut = cl.Image(pose.ctx, cl.mem_flags.WRITE_ONLY, img_format_uint, shape=(img_w, img_h))
+
+
+        # Set kernel arguments
+        kernel = pose.kernel_linear_transform_img
+        kernel.set_arg(0, np.int32(img_w))
+        kernel.set_arg(1, np.int32(img_h))
+        kernel.set_arg(2, np.int32(img_shift[0]))
+        kernel.set_arg(3, np.int32(img_shift[1]))
+        kernel.set_arg(4, imageIn)
+        kernel.set_arg(5, imageOut)
+
+        # Enqueue kernel execution
+        cl.enqueue_nd_range_kernel(pose.commQ, kernel, (img_w, img_h), None)
+        pose.commQ.finish()
+
+        # Allocate host array to copy result
+        output = np.zeros((img_h, img_w, 4), dtype=np.uint8)
+        cl.enqueue_copy(pose.commQ, output, imageOut, origin=(0, 0, 0), region=(img_w, img_h, 1))
+        pose.commQ.finish()
+
+        output = cv.cvtColor(output, cv.COLOR_RGBA2BGR)
+
+        if verbose:
+            plt.imshow(output)
+            plt.axis('off')
+            plt.show()
+        return output
+
+    except Exception as e:
+        print("From linear_transform_img error:", e)

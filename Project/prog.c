@@ -204,3 +204,26 @@ __kernel void ncc_tiled(
 
     write_imageui(outputImage, (int2)(global_x, global_y), (uint4)((uint)correlation, 0, 0, 255));
 }
+
+__kernel void linear_transform_img(
+    int img_w,
+    int img_h,
+    int shift_x,
+    int shift_y,
+    __read_only image2d_t inputImage,
+    __write_only image2d_t outputImage) 
+{
+    const sampler_t sampler =
+        CLK_NORMALIZED_COORDS_FALSE |
+        CLK_ADDRESS_CLAMP_TO_EDGE |
+        CLK_FILTER_NEAREST;
+
+    const int global_x = get_global_id(0);
+    const int global_y = get_global_id(1);
+
+    if (global_x + shift_x >= img_w ||  global_y + shift_y >= img_h) return;
+
+    uint4 pixel = read_imageui(inputImage, sampler, (int2)(global_x + shift_x, global_y + shift_y));    
+
+    write_imageui(outputImage, (int2)(global_x, global_y), pixel);    
+}
