@@ -7,45 +7,27 @@ class PoseEstimator:
         self.img_width = 1280
         self.img_height = 720
 
+        self.crop_size = 368
+        self.tutorial = 1
+        self.play_prompt = "Do you want to play a game?"
+        self.box_shape = [self.img_width//9, self.img_height//9]
+        self.wait_between_rounds = 2
+        self.time_per_round = 15
+        self.time_decay = 0.9
+        self.boxes_colors = [[255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255], [0, 255, 255, 255]]
+
+        self.game_colors = ["Blue", "Green", "Red", "Yellow"]
+        self.face_detection_threshold = 0.7
+
         # open pose #
 
         self.protoFile = ".\\Project\\pose_models\\mpi\\pose_deploy_linevec_faster_4_stages.prototxt"
         self.weightsFile = ".\\Project\\pose_models\\mpi\\pose_iter_160000.caffemodel"
 
-        self.POSE_PAIRS = [
-            ("Head", "Neck"),
-            ("Neck", "RShoulder"), ("RShoulder", "RElbow"), ("RElbow", "RWrist"),
-            ("Neck", "LShoulder"), ("LShoulder", "LElbow"), ("LElbow", "LWrist"),
-            ("Neck", "Chest"),
-            ("Chest", "RHip"), ("RHip", "RKnee"), ("RKnee", "RAnkle"),
-            ("Chest", "LHip"), ("LHip", "LKnee"), ("LKnee", "LAnkle")
-        ]
-
-        self.BODY_PARTS = {
-            "Head": 0,
-            "Neck": 1,
-            "RShoulder": 2,
-            "RElbow": 3,
-            "RWrist": 4,
-            "LShoulder": 5,
-            "LElbow": 6,
-            "LWrist": 7,
-            "RHip": 8,
-            "RKnee": 9,
-            "RAnkle": 10,
-            "LHip": 11,
-            "LKnee": 12,
-            "LAnkle": 13,
-            "Chest": 14
-        }
-
         self.THRESHOLD = 0.05 # this is the openpose THRESHOLD
 
-        # haar #
-
-        self.haar = cv.CascadeClassifier(
-            ".\\Project\\haar_models\\haarcascade_frontalface_default.xml"
-        )
+        # DNN face detection
+        self.DNN = cv.dnn.readNetFromTensorflow(".\\Project\\DNN_models\\opencv_face_detector_uint8.pb", ".\\Project\\DNN_models\\opencv_face_detector.pbtxt")
 
         # template matching #
 

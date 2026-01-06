@@ -221,9 +221,9 @@ __kernel void linear_transform_img(
     const int global_x = get_global_id(0);
     const int global_y = get_global_id(1);
 
-    if (global_x + shift_x >= img_w ||  global_y + shift_y >= img_h) return;
+    if (global_x - shift_x <= 0 ||  global_y - shift_y <= 0 || global_x - shift_x >= img_w ||  global_y - shift_y >= img_h) return;
 
-    uint4 pixel = read_imageui(inputImage, sampler, (int2)(global_x + shift_x, global_y + shift_y));    
+    uint4 pixel = read_imageui(inputImage, sampler, (int2)(global_x - shift_x, global_y - shift_y));    
 
     write_imageui(outputImage, (int2)(global_x, global_y), pixel);    
 }
