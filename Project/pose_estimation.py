@@ -1,7 +1,7 @@
 import cv2 as cv
-from PoseEstimator import PoseEstimator
+from gameManager import GameManager
 
-def pose_estimation(frame, pose: PoseEstimator, threshold, verbose=False):
+def pose_estimation(frame, gm: GameManager, threshold, verbose=False):
     """
     Runs pose estimation on a resized frame and returns keypoints
     in ORIGINAL image coordinates.
@@ -19,8 +19,8 @@ def pose_estimation(frame, pose: PoseEstimator, threshold, verbose=False):
         crop=False
     )
 
-    pose.net.setInput(blob)
-    out = pose.net.forward()
+    gm.net.setInput(blob)
+    out = gm.net.forward()
 
     H = out.shape[2]
     W = out.shape[3]

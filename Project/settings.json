@@ -1,0 +1,19 @@
+{
+    "display_tutorial" : true,
+    "image_width" : 1280,
+    "image_height" : 720,
+    "open_pose_image_size" : 368,
+    "time_between_rounds_s" : 2,
+    "time_of_round_s" : 15,
+    "round_time_decay" : 0.9,
+    "face_detection_confidence_level" : 0.7,
+    "open_pose_threshold_confidence_level" : 0.05,
+    "initial_prompt" : "Do you want to play a game?",
+    "face_template_location" : ".\\Project\\face_template_2.png",
+    "DNN_model_pb_file" : ".\\Project\\DNN_models\\opencv_face_detector_uint8.pb", 
+    "DNN_model_pbtxt_file" : ".\\Project\\DNN_models\\opencv_face_detector.pbtxt",
+    "pose_model_weights_file" : ".\\Project\\pose_models\\mpi\\pose_iter_160000.caffemodel", 
+    "pose_model_proto_file" : ".\\Project\\pose_models\\mpi\\pose_deploy_linevec_faster_4_stages.prototxt", 
+    "box_colors" : [[255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255], [0, 255, 255, 255]],
+    "game_colors" : ["Blue", "Green", "Red", "Yellow"]
+}
