@@ -386,7 +386,7 @@ inline with the performance expectations documented by OpenPose,
 \subsection{System Pipeline}
 
 As a recap of the processes used a step by step process of the system is
-written bellow:\\
+written below:\\
 
 The complete template matching/GPU pipeline combines multiple processing steps:
 \begin{enumerate}
@@ -512,7 +512,7 @@ afformentioned body parts coordinates fall within the top left (x, y), and the
 bottom right (x, y) coordinates, of a given box, then that box is considered
 selected.
 
-The game implements strict matching rules using pattern matching:
+The game implements strict matching rules position matching:
 \begin{itemize}
     \item Keypoint coordinates are scaled from 368x368 crop back to original body ROI
           dimensions
@@ -543,11 +543,11 @@ This logarithmic decay ensures:
 \begin{itemize}
     \item Near-certain color-word matching at low scores
     \item Gradual reduction of matching probability as score increases
-    \item A smooth difficulty ramp without abrupt changes
 \end{itemize}
 
-This mechanism maintains early accessibility while progressively increasing
-cognitive load as the player advances through successive rounds.
+This implementation ensures a difficulty progression within the game,
+preventing the player from feeling bored and incentivising them to improve at
+the game.
 
 \bibliography{references}
 
