@@ -1,0 +1,1 @@
+"Place your hand over the square\nof the color the word is"

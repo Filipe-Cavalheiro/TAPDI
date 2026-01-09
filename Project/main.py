@@ -116,6 +116,7 @@ def main():
 
         # tutorial
         elif gm.tutorial and game:
+            
             prompt = f"Place your hand over the square"
             cv.putText(frame, prompt, (x - 200, y - 100), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255, 255), 6)
             cv.putText(frame, prompt, (x - 200, y - 100), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0, 255), 4)
@@ -125,7 +126,7 @@ def main():
             cv.putText(frame, prompt, (x - 150, y - 50), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255, 255), 6)
             cv.putText(frame, prompt, (x - 150, y - 50), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0, 255), 4)
             
-            if time.time() - game_start_time >= 5:
+            if time.time() - game_start_time >= gm.tutorial_time:
                 
                 wait = 1
                 gm.tutorial = 0

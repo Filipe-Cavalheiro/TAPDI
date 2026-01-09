@@ -179,21 +179,39 @@ showstringspaces=false
 
 \section{Introduction}
 
-This project implements an interactive motion-based game that leverages advanced computer vision techniques to create an engaging user experience. The system combines face detection, pose estimation, template matching, and GPU-accelerated image processing to enable players to control game elements using body movements captured through a standard webcam.
+This project implements an interactive motion-based game that leverages
+advanced computer vision techniques to create an engaging user experience. The
+system combines face detection, pose estimation, template matching, and
+GPU-accelerated image processing to enable players to control game elements
+using body movements captured through a standard webcam.
 
-The project demonstrates the practical application of multiple computer vision algorithms, including deep neural networks (DNN) for detection tasks and custom OpenCL kernels for high-performance image processing operations. The game implements a "Simon Says" style interaction where players must position their hands over colored squares based on text prompts, creating a challenging exercise in both visual perception and physical coordination.
+The project demonstrates the practical application of multiple computer vision
+algorithms, including deep neural networks (DNN) for detection tasks and custom
+OpenCL kernels for high-performance image processing operations. The game
+implements a "Simon Says" style interaction where players must position their
+hands over colored squares based on text prompts, creating a challenging
+exercise in both visual perception and physical coordination.
 
-A video demonstatios of the project can be seen at: \href{https://youtu.be/y8x0-IAdg58}{TAPDI - Apresentação do projeto}
+A video demonstatios of the project can be seen at:
+\href{https://youtu.be/y8x0-IAdg58}{TAPDI - Apresentação do projeto}
 
 \subsection{Project Objectives}
 
-For this project we were tasked with using real time template matching using the GPU and kernels in order to track and stabelize/center the games user in the center of the screen at all times, at the same time pose estimation was done via the OpenPose library having a ROI for analysis based on the location of the users face, detected via a DNN. Finally a game of our choice, in this case "Simon Says", must be implement with this technology in mind. 
+For this project we were tasked with using real time template matching using
+the GPU and kernels in order to track and stabelize/center the games user in
+the center of the screen at all times, at the same time pose estimation was
+done via the OpenPose library having a ROI for analysis based on the location
+of the users face, detected via a DNN. Finally a game of our choice, in this
+case "Simon Says", must be implement with this technology in mind.
 
 \section{Technical Architecture}
 
 \subsection{System Overview} \label{subsec:System Overview}
 
-The system architecture consists of several interconnected modules, each responsible for specific computer vision tasks. Figure~\ref{fig:system_architecture} illustrates the overall data flow through the system.
+The system architecture consists of several interconnected modules, each
+responsible for specific computer vision tasks.
+Figure~\ref{fig:system_architecture} illustrates the overall data flow through
+the system.
 
 \begin{figure}[H]
     \centering
@@ -204,19 +222,27 @@ The system architecture consists of several interconnected modules, each respons
 
 \subsection{Module Descriptions}
 
-The multiple modules shown in \cref{fig:system_architecture} have are below described:\\
+The multiple modules shown in \cref{fig:system_architecture} have are below
+described:\\
 
 \begin{itemize}
     \item Face Detection DNN-based (\cref{subsec:DNN-Based Detection Pipeline})
-    \item Template Matching and Image Transformation are both described in (\cref{subsec:Template matching: OpenCL Implementation})
+    \item Template Matching and Image Transformation are both described in
+          (\cref{subsec:Template matching: OpenCL Implementation})
     \item Body ROI Extraction (\cref{subsec:Body Region of Interest Extraction})
     \item Pose Estimation (\cref{subsec:Pose Estimation})
-    \item Finally the game logic is applied as shown in (\cref{sec:Game Logic and Interaction})
+    \item Finally the game logic is applied as shown in (\cref{sec:Game Logic and
+              Interaction})
 \end{itemize}
 
 \section{In Depth Module Descriptions} \label{sec:In Depth Module Descriptions}
 
-The system implements face detection using a TensorFlow-based deep neural network for later use by OpenPose as well as template matching. The use of a DNN instead of a traditional Haar cascade classifiers is that Tthis approach provides superior accuracy and robustness to varying lighting conditions and face orientations. As has been shown and proven during classes along the semester, more precissely in TP9-10.
+The system implements face detection using a TensorFlow-based deep neural
+network for later use by OpenPose as well as template matching. The use of a
+DNN instead of a traditional Haar cascade classifiers is that Tthis approach
+provides superior accuracy and robustness to varying lighting conditions and
+face orientations. As has been shown and proven during classes along the
+semester, more precissely in TP9-10.
 
 \subsection{DNN-Based Detection Pipeline} \label{subsec:DNN-Based Detection Pipeline}
 
@@ -231,15 +257,27 @@ The detection process involves several key steps:
 
 \subsection{Template matching: OpenCL Implementation} \label{subsec:Template matching: OpenCL Implementation}
 
-The project leverages GPU acceleration through OpenCL for computationally intensive operations. Three primary kernels are implemented in C and compiled at runtime:
+The project leverages GPU acceleration through OpenCL for computationally
+intensive operations. Three primary kernels are implemented in C and compiled
+at runtime:
 
 \subsubsection{Template Average Subtraction}
 
-This kernel prepares the face template for normalized cross-correlation by subtracting the mean intensity from each pixel. The operation is performed in parallel across all pixels, with each GPU thread processing one pixel location. The kernel reads from an input image, subtracts a pre-computed mean value (stored as a 4-component vector for RGBA channels), and writes the result to an output image. Boundary conditions are handled by checking if coordinates exceed image dimensions. Subtraction of the image average is done in seperate since the template average subtraction only need to be done once while the rest of the kernels are used multiple times.
+This kernel prepares the face template for normalized cross-correlation by
+subtracting the mean intensity from each pixel. The operation is performed in
+parallel across all pixels, with each GPU thread processing one pixel location.
+The kernel reads from an input image, subtracts a pre-computed mean value
+(stored as a 4-component vector for RGBA channels), and writes the result to an
+output image. Boundary conditions are handled by checking if coordinates exceed
+image dimensions. Subtraction of the image average is done in seperate since
+the template average subtraction only need to be done once while the rest of
+the kernels are used multiple times.
 
 \subsubsection{Normalized Cross-Correlation (NCC)}
 
-The NCC kernel implements efficient template matching using local memory tiling for improved memory access patterns. The implementation uses work groups of 8x8 threads, with the template dimensions fixed at 105x90 pixels.
+The NCC kernel implements efficient template matching using local memory tiling
+for improved memory access patterns. The implementation uses work groups of 8x8
+threads, with the template dimensions fixed at 105x90 pixels.
 
 The kernel operates in three phases:
 
@@ -254,23 +292,32 @@ The final correlation value is computed by multiplying corresponding pixels from
 
 For a better understanding the NCC formula implemented is shown below:
 \begin{equation}
-\rho(x,y) = \frac{\sum_{i,j}(T(i,j) - \bar{T})(I(x+i,y+j) - \bar{I}_{x,y})}
-        {\sqrt{\sum_{i,j} \left[ {T(i,j)}^2 \right] \cdot \sum_{i,j} \left[{I(x+i,y+j)}^2\right] }}
+    \rho(x,y) = \frac{\sum_{i,j}(T(i,j) - \bar{T})(I(x+i,y+j) - \bar{I}_{x,y})}
+    {\sqrt{\sum_{i,j} \left[ {T(i,j)}^2 \right] \cdot \sum_{i,j} \left[{I(x+i,y+j)}^2\right] }}
 \end{equation}
-    
+
 \begin{align*}
     \bar{T} = \frac{1}{w\cdot h}\cdot \sum_{i,j}T(i,j) \quad \bar{I}_{x,y} = \frac{1}{w\cdot h}\cdot \sum_{i,j}I(i+x,j+y)
 \end{align*}
 
-where $T$ is the template, $I$ is the input image, and $\bar{T}$, $\bar{I}_{x,y}$ are their respective means.
+where $T$ is the template, $I$ is the input image, and $\bar{T}$,
+$\bar{I}_{x,y}$ are their respective means.
 
 \subsubsection{Linear Image Transformation}
 
-This kernel performs image translation to center the detected face in the frame. Each thread processes one output pixel by reading from a shifted location in the input image. The kernel parameters include the image dimensions and the x/y shift amounts. Boundary checking ensures that reads from shifted positions remain within valid image coordinates. Pixels that would map outside the input image bounds are skipped, effectively creating black borders where the shifted image doesn't provide data. The sampler is configured with edge clamping to handle boundary conditions gracefully.
+This kernel performs image translation to center the detected face in the
+frame. Each thread processes one output pixel by reading from a shifted
+location in the input image. The kernel parameters include the image dimensions
+and the x/y shift amounts. Boundary checking ensures that reads from shifted
+positions remain within valid image coordinates. Pixels that would map outside
+the input image bounds are skipped, effectively creating black borders where
+the shifted image doesn't provide data. The sampler is configured with edge
+clamping to handle boundary conditions gracefully.
 
 \subsubsection{Used template}
 
-The template used for template matching is the one shown in \cref{fig:Face_template}
+The template used for template matching is the one shown in
+\cref{fig:Face_template}
 
 \begin{figure}[H]
     \centering
@@ -279,11 +326,17 @@ The template used for template matching is the one shown in \cref{fig:Face_templ
     \label{fig:Face_template}
 \end{figure}
 
-The choice of this face template and explation of its low resolution come from the fact that despite the template matching only caring about the face, open pose need a full body reference in order to work optimally making so that the subject is far away from the camera and redusing the dimension/quality of the face template being the same only 105x90 pixels. 
+The choice of this face template and explation of its low resolution come from
+the fact that despite the template matching only caring about the face, open
+pose need a full body reference in order to work optimally making so that the
+subject is far away from the camera and redusing the dimension/quality of the
+face template being the same only 105x90 pixels.
 
 \subsection{Body Region of Interest Extraction} \label{subsec:Body Region of Interest Extraction}
 
-Once a face is detected, the system extracts a body region of interest (ROI) for pose estimation. The ROI is calculated based on anthropometric proportions relative to the detected face dimensions.
+Once a face is detected, the system extracts a body region of interest (ROI)
+for pose estimation. The ROI is calculated based on anthropometric proportions
+relative to the detected face dimensions.
 
 The ROI calculation uses empirically determined scaling factors:
 \begin{itemize}
@@ -293,21 +346,35 @@ The ROI calculation uses empirically determined scaling factors:
 
 \subsection{Pose Estimation} \label{subsec:Pose Estimation}
 
-Pose estimation is performed using the OpenPose MPI model, which detects 15 body keypoints, including the head, shoulders, elbows, wrists, hips, knees, and ankles. More specifically, the model \textit{\texttt{pose\_deploy\_linevec\_faster\_4\_stages}} with weights \textit{\texttt{pose\_iter\_160000.caffemodel}} is used. Despite the model's capability to detect the full body, only keypoints 4 and 7 (corresponding to the right and left hands) are utilized in this work.
+Pose estimation is performed using the OpenPose MPI model, which detects 15
+body keypoints, including the head, shoulders, elbows, wrists, hips, knees, and
+ankles. More specifically, the model
+\textit{\texttt{pose\_deploy\_linevec\_faster\_4\_stages}} with weights
+\textit{\texttt{pose\_iter\_160000.caffemodel}} is used. Despite the model's
+capability to detect the full body, only keypoints 4 and 7 (corresponding to
+the right and left hands) are utilized in this work.
 
 \subsubsection{OpenPose Implementation}
-Before invoking the OpenPose inference, the input image is downscaled to a resolution of 368$\times$368 pixels, which is the recommended input size for pose estimation with this model.
+Before invoking the OpenPose inference, the input image is downscaled to a
+resolution of 368$\times$368 pixels, which is the recommended input size for
+pose estimation with this model.
 
 The pose estimation process consists of the following stages:
 \begin{enumerate}
-    \item Conversion of the input image into a normalized blob (pixel values divided by 255)
+    \item Conversion of the input image into a normalized blob (pixel values divided by
+          255)
     \item Generation of confidence heatmaps for each body part
     \item Extraction of maximum-confidence locations from each heatmap
     \item Filtering of keypoints based on a confidence threshold of 0.05
     \item Scaling of the extracted coordinates back to the original image dimensions
 \end{enumerate}
 
-Due to the high computational cost of pose estimation, this process is executed only once every 10 frames, and the body keypoint positions are updated accordingly. This significantly improves runtime performance, as running OpenPose on every frame yields approximately 2 frames per second, which is inline with the performance expectations documented by OpenPose, \cref{fig:openpose run time} \cite{cao2019openposerealtimemultiperson2d}.
+Due to the high computational cost of pose estimation, this process is executed
+only once every 10 frames, and the body keypoint positions are updated
+accordingly. This significantly improves runtime performance, as running
+OpenPose on every frame yields approximately 2 frames per second, which is
+inline with the performance expectations documented by OpenPose,
+\cref{fig:openpose run time} \cite{cao2019openposerealtimemultiperson2d}.
 
 \begin{figure}
     \centering
@@ -318,7 +385,8 @@ Due to the high computational cost of pose estimation, this process is executed 
 
 \subsection{System Pipeline}
 
-As a recap of the processes used a step by step process of the system is written bellow:\\
+As a recap of the processes used a step by step process of the system is
+written bellow:\\
 
 The complete template matching/GPU pipeline combines multiple processing steps:
 \begin{enumerate}
@@ -341,70 +409,113 @@ The pose estimation/CPU pipeline is below:
     \item \textbf{OpenPose is ran:} The output points of open pose are stored for use in the game.
 \end{enumerate}
 
-With the complete porcessing logic for pose estimation and centering of the player the following section focuses on the game development and implementation.
+With the complete porcessing logic for pose estimation and centering of the
+player the following section focuses on the game development and
+implementation.
 
-\section{Game Logic and Interaction} \label{sec:Game Logic and Interaction}
+\section{Game Logic and Interaction}~\label{sec:Game Logic and Interaction}
 
-\subsection{Game States}
+\subsection{Game and States}
 
-The game operates in multiple states managed through the main loop:
+The game operates in multiple states managed through the main loop. Although
+the game is always trying to be in one of these states, if the face detector
+doesn't detect any faces, the game will be on stasis until a face is detected.
+However, any timers that have already been started will not pause during this
+stasis state.
 
 \begin{figure}[H]
-    \begin{tikzpicture}[node distance=2.5cm]
+    \centering
+    \begin{tikzpicture}[node distance=1cm]
         \node (start) [startstop] {Start};
-        \node (menu) [decision, below=of start] {Play Menu};
-        \node (tutorial) [process, below=2cm of menu] {Tutorial};
-        \node (wait) [process, right=2cm of tutorial] {Wait Period\\(2s)};
-        \node (game) [process, below=of tutorial] {Game Round};
-        \node (score) [decision, below=2cm of game] {Check Score};
-        \node (end) [startstop, below=2cm of score] {Game Over};
-        
+        \node (menu) [decision, right=of start] {Play Menu};
+        \node (tutorial) [process, right=of menu] {Tutorial};
+        \node (game) [process, right=of tutorial] {Game Round};
+        \node (wait) [process, below=1.9cm of tutorial] {Wait Period (2s)};
+        \node (score) [decision, above=of game] {Check Answer};
+        \node (end) [startstop, below=of menu] {Close Game};
+
         \draw [arrow] (start) -- (menu);
-        \draw [arrow] (menu) -- node[anchor=east] {Yes} (tutorial);
-        \draw [arrow] (menu) -- node[anchor=south] {No} (end);
+        \draw [arrow] (menu) -- node[anchor=south] {Yes} (tutorial);
+        \draw [arrow] (menu) -- node[anchor=east] {No} (end);
         \draw [arrow] (tutorial) -- (wait);
         \draw [arrow] (wait) -- (game);
         \draw [arrow] (game) -- (score);
-        \draw [arrow] (score) -- node[anchor=east] {Correct} (wait);
-        \draw [arrow] (score) -- node[anchor=south] {Fail} (menu);
+        \draw [arrow] (score) -- node[anchor=east, pos=0.2] {Correct} (wait);
+        \draw [arrow] (score) -- node[anchor=south, pos = 0.3] {Fail} (menu);
     \end{tikzpicture}
     \caption{Game state machine}
     \label{fig:game_states}
 \end{figure}
 
-\subsubsection{Menu State}
+Before starting the game, the GameManager, the class that controlls most things
+in the game loads into memory the settings that are stored in the settings.json
+file. From now on when a [json] in the text it means the mentioned feature can
+be adjusted inside the settings.json file, not all features that can be
+adjusted through the settings.json file will be mentioned.
 
-In the menu state, the system displays "Yes" and "No" boxes. Players hover their hand over:
+\subsubsection{Menu}
+
+Whilst in the main menu state, the players are presented with a choice, either
+to play the game or not. Players hover their hand over the displayed boxes to
+present their choice:
+
 \begin{itemize}
     \item \textbf{Yes box} (green, left side): Starts the game
     \item \textbf{No box} (red, right side): Exits the application
 \end{itemize}
 
-\subsubsection{Tutorial State}
+It is important to note that whilst in the menu, if the player chooses
+multiuple boxes as the answer, the game will interpret that as a yes.
 
-The tutorial displays instructions for 5 seconds explaining the game mechanics before transitioning to the first round.
+\subsubsection{Tutorial}
 
-\subsubsection{Game State}
+The tutorial displays instructions for 5 seconds [json] explaining the game
+mechanics before transitioning to the first round. The user can choose whether
+or not the tutorial is displayed [json].
 
-During active gameplay:
-\begin{itemize}
-    \item Four colored boxes appear: Blue (top-left), Green (top-right), Red (bottom-left), Yellow (bottom-right)
-    \item A color word is displayed in random color at body center
-    \item Player must hover hand over box matching the word (not the text color)
-    \item Time limit starts at 15 seconds and decreases by 10\% each round (time decay factor 0.9)
-    \item Score increases on correct selection
-    \item Game resets to menu on: timeout, wrong selection, or multiple hands detected
-\end{itemize}
+\subsubsection{Game}
+
+During active gameplay, the player is presented with a choice between 4 colored
+boxes (Blue, Green, Red, Yellow) [json]. They are then presented with a word
+that spells one of this 4 colors and is colored in the shade of one of these 4
+colors, the player must choose the color the word is colored as, by moving
+their hands inside the respective colored square, to gain points. If the player
+chooses the wrong square they loose and have to start over, if the player
+chooses more than one square, they loose and have to start over as well.
+
+\paragraph{}
+The color that the word spells and it's shade start of the same (if the word is
+shaded Blue it also spells Blue) as the player accumulates more points the word
+stops spelling the color of it's shade, and starts spelling one of the other 3
+colors instead. At the same time the more rounds the player plays the shorter
+time they have to answer. A player starts the game having 15 seconds to answer
+    [json] and that time decreses at 0.9 rate [json] as rounds advance, (if the
+player started with 15 seconds of time to answer in the first round, then in
+the seconde round they will have $15 \times 0.9$ or 13.5 seconds to answer). If
+a player runs out of time they loose and have to start over.
 
 \subsection{Collision Detection}
 
-The game uses point-in-rectangle collision detection for hand-box interactions. The system first extracts hand keypoints from the pose estimation results by filtering indices 4 through 13 at intervals of 3, which correspond to wrist positions for both hands. These keypoints are then scaled from the 368×368 crop dimensions back to the original body ROI coordinates.
+The game checks a player choice by detecting if their hands are within the box
+locations. For this the game needs to detect the body position, it does this by
+detecting the player face, with a DNN model [json], then with that face's
+location grabbing a subimage that contains the entire body of the person and
+send that image to the pose estimator model [json] to estimate the body parts
+locations. To improve performance the image sent to the pose estimator model is
+downscaled to 368x368 size [json].
 
-For each colored box, the system counts how many valid hand keypoints fall within its boundaries. The collision logic uses simple coordinate comparisons: a point is considered inside a box if its x-coordinate falls between the box's left and right edges, and its y-coordinate falls between the top and bottom edges.
+The pose estimator then returns the image coordinates the body parts in
+question, and their positions are checked to determine what box the player
+chose. In this case the body parts being check are the wrists and ankles, as
+the used pose estimator model doesn't identify neither hands nor feet. If the
+afformentioned body parts coordinates fall within the top left (x, y), and the
+bottom right (x, y) coordinates, of a given box, then that box is considered
+selected.
 
 The game implements strict matching rules using pattern matching:
 \begin{itemize}
-    \item Keypoint coordinates are scaled from 368x368 crop back to original body ROI dimensions
+    \item Keypoint coordinates are scaled from 368x368 crop back to original body ROI
+          dimensions
     \item Only valid (non-None) keypoints are considered
     \item Exactly one hand in correct box = success
     \item One hand in wrong box = failure
@@ -413,21 +524,20 @@ The game implements strict matching rules using pattern matching:
 
 \subsubsection{Text Color Probability Decay}
 
-At the beginning of the game, the color of the displayed text is highly likely to match the semantic meaning of the word, making early rounds easier for the player. As the game progresses and the score increases, this probability decreases, increasing the difficulty by encouraging Stroop-effect interference.
+As mentioned before, at the beginning of the game, the color of the displayed
+text is highly likely to match text itself, making early rounds easier for the
+player. As the game progresses and the score increases, this probability
+decreases, increasing the difficulty.
 
 The probability of the text color matching the word color is defined as:
 
 \begin{equation}
-P_{\text{match}} = \frac{10}{\log_{100}(\text{score} + 1)}
+    P_{\text{match}} = \frac{10}{\log_{100}(\text{score} + 1)}
 \end{equation}
 
-At each round, a uniformly distributed random integer \( r \in [0, 100] \) is generated. If:
-
-\begin{equation}
-r \leq P_{\text{match}}
-\end{equation}
-
-then the text color matches the word. Otherwise, the text color is randomly selected from the remaining colors, excluding the correct one.
+At the start of each round, a random integer \( r \in [0, 100] \) is generated.
+If \(r \leq P_{\text{match}}\) then the text color matches the word. Otherwise,
+the text color is randomly selected from the remaining colors.
 
 This logarithmic decay ensures:
 \begin{itemize}
@@ -436,8 +546,8 @@ This logarithmic decay ensures:
     \item A smooth difficulty ramp without abrupt changes
 \end{itemize}
 
-This mechanism maintains early accessibility while progressively increasing cognitive load as the player advances through successive rounds.
-
+This mechanism maintains early accessibility while progressively increasing
+cognitive load as the player advances through successive rounds.
 
 \bibliography{references}
 
@@ -445,50 +555,50 @@ This mechanism maintains early accessibility while progressively increasing cogn
 \section{Computer Specification} \label{anex:Computer Specification}
 
 \begin{table}[H]
-\centering
-\centering
-\begin{tabular}{|l|l|}
-\hline
-\multicolumn{2}{|c|}{\textbf{Filipe Cavalheiro}} \\ \hline
-\textbf{Property} & \textbf{Value} \\ \hline
-Name & NVIDIA CUDA \\ \hline
-Vendor & NVIDIA Corporation \\ \hline
-Version & OpenCL 3.0 CUDA 13.1.86 \\ \hline
-Device Name & NVIDIA GeForce RTX 2060 \\ \hline
-Max Compute Units & 30 \\ \hline
-Max Constant Args & 9 \\ \hline
-Max Work Item Dimensions & 3 \\ \hline
-Max Work Item Sizes & [1024, 1024, 64] \\ \hline
-Max Work Group Size & 1024 \\ \hline
-Image Support & 1 \\ \hline
-Image2D Max Width & 32768 \\ \hline
-Image2D Max Height & 32768 \\ \hline
-Local Mem Size & 49152 \\ \hline
-\end{tabular}
+    \centering
+    \centering
+    \begin{tabular}{|l|l|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{Filipe Cavalheiro}}   \\ \hline
+        \textbf{Property}        & \textbf{Value}          \\ \hline
+        Name                     & NVIDIA CUDA             \\ \hline
+        Vendor                   & NVIDIA Corporation      \\ \hline
+        Version                  & OpenCL 3.0 CUDA 13.1.86 \\ \hline
+        Device Name              & NVIDIA GeForce RTX 2060 \\ \hline
+        Max Compute Units        & 30                      \\ \hline
+        Max Constant Args        & 9                       \\ \hline
+        Max Work Item Dimensions & 3                       \\ \hline
+        Max Work Item Sizes      & [1024, 1024, 64]        \\ \hline
+        Max Work Group Size      & 1024                    \\ \hline
+        Image Support            & 1                       \\ \hline
+        Image2D Max Width        & 32768                   \\ \hline
+        Image2D Max Height       & 32768                   \\ \hline
+        Local Mem Size           & 49152                   \\ \hline
+    \end{tabular}
 \end{table}
 
 \begin{table}[H]
-\centering
-\centering
-\begin{tabular}{|l|l|}
-\hline
-\multicolumn{2}{|c|}{\textbf{Diogo Novais}} \\ \hline
-\textbf{Property} & \textbf{Value} \\ \hline
-Name & NVIDIA CUDA \\ \hline
-Vendor & NVIDIA Corporation \\ \hline
-Version & OpenCL 3.0 CUDA 13.1.86 \\ \hline
-Device Name & NVIDIA GeForce RTX 5060 Laptop GPU \\ \hline
-Max Compute Units & 26 \\ \hline
-Max Constant Args & 9 \\ \hline
-Max Work Item Dimensions & 3 \\ \hline
-Max Work Item Sizes & [1024, 1024, 64] \\ \hline
-Max Work Group Size & 1024 \\ \hline
-Image Support & 1 \\ \hline
-Image2D Max Width & 32768 \\ \hline
-Image2D Max Height & 32768 \\ \hline
-Local Mem Size & 49152 \\ \hline
-Preferred Work Group Size Multiple & 32 \\ \hline
-\end{tabular}
+    \centering
+    \centering
+    \begin{tabular}{|l|l|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{Diogo Novais}}                             \\ \hline
+        \textbf{Property}                  & \textbf{Value}                     \\ \hline
+        Name                               & NVIDIA CUDA                        \\ \hline
+        Vendor                             & NVIDIA Corporation                 \\ \hline
+        Version                            & OpenCL 3.0 CUDA 13.1.86            \\ \hline
+        Device Name                        & NVIDIA GeForce RTX 5060 Laptop GPU \\ \hline
+        Max Compute Units                  & 26                                 \\ \hline
+        Max Constant Args                  & 9                                  \\ \hline
+        Max Work Item Dimensions           & 3                                  \\ \hline
+        Max Work Item Sizes                & [1024, 1024, 64]                   \\ \hline
+        Max Work Group Size                & 1024                               \\ \hline
+        Image Support                      & 1                                  \\ \hline
+        Image2D Max Width                  & 32768                              \\ \hline
+        Image2D Max Height                 & 32768                              \\ \hline
+        Local Mem Size                     & 49152                              \\ \hline
+        Preferred Work Group Size Multiple & 32                                 \\ \hline
+    \end{tabular}
 \end{table}
 
 \section{Developed Kernels} \label{anex:Developed Kernels}

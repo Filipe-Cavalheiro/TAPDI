@@ -17,6 +17,7 @@ class GameManager:
             raise FileNotFoundError
 
         self.tutorial = json_file["display_tutorial"]
+        self.tutorial_time = json_file["tutorial_wait_time_s"]
         self.img_width = json_file["image_width"]
         self.img_height = json_file["image_height"]
 
