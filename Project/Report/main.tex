@@ -138,7 +138,7 @@ showstringspaces=false
     \textsc{\Huge Mestrado em Engenharia Eletrotécnica e de Computadores}\\[2.5cm]
     \textsc{\LARGE Computer Vision}\\[2.0cm]
     \HRule\\[0.4cm]
-    {\large \bf {Motion-Based Interactive Game Using Computer Vision and GPU Acceleration}}\\[0.2cm]
+    {\large \bf {A Motion-Based Interactive Game Using Computer Vision and GPU Acceleration}}\\[0.2cm]
     \HRule\\[1.5cm]
 \end{center}
 
@@ -183,6 +183,8 @@ This project implements an interactive motion-based game that leverages advanced
 
 The project demonstrates the practical application of multiple computer vision algorithms, including deep neural networks (DNN) for detection tasks and custom OpenCL kernels for high-performance image processing operations. The game implements a "Simon Says" style interaction where players must position their hands over colored squares based on text prompts, creating a challenging exercise in both visual perception and physical coordination.
 
+A video demonstatios of the project can be seen at: \href{https://youtu.be/y8x0-IAdg58}{TAPDI - Apresentação do projeto}
+
 \subsection{Project Objectives}
 
 For this project we were tasked with using real time template matching using the GPU and kernels in order to track and stabelize/center the games user in the center of the screen at all times, at the same time pose estimation was done via the OpenPose library having a ROI for analysis based on the location of the users face, detected via a DNN. Finally a game of our choice, in this case "Simon Says", must be implement with this technology in mind. 
@@ -195,7 +197,7 @@ The system architecture consists of several interconnected modules, each respons
 
 \begin{figure}[H]
     \centering
-    \includegraphics{./Images/System_Architecture.png}
+    \includegraphics[width=0.6\textwidth]{./Images/System_Architecture.png}
     \caption{System architecture and data flow diagram}
     \label{fig:system_architecture}
 \end{figure}
@@ -266,6 +268,19 @@ where $T$ is the template, $I$ is the input image, and $\bar{T}$, $\bar{I}_{x,y}
 
 This kernel performs image translation to center the detected face in the frame. Each thread processes one output pixel by reading from a shifted location in the input image. The kernel parameters include the image dimensions and the x/y shift amounts. Boundary checking ensures that reads from shifted positions remain within valid image coordinates. Pixels that would map outside the input image bounds are skipped, effectively creating black borders where the shifted image doesn't provide data. The sampler is configured with edge clamping to handle boundary conditions gracefully.
 
+\subsubsection{Used template}
+
+The template used for template matching is the one shown in \cref{fig:Face_template}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics{Images/face_template_2.png}
+    \caption{Face Template used for the project}
+    \label{fig:Face_template}
+\end{figure}
+
+The choice of this face template and explation of its low resolution come from the fact that despite the template matching only caring about the face, open pose need a full body reference in order to work optimally making so that the subject is far away from the camera and redusing the dimension/quality of the face template being the same only 105x90 pixels. 
+
 \subsection{Body Region of Interest Extraction} \label{subsec:Body Region of Interest Extraction}
 
 Once a face is detected, the system extracts a body region of interest (ROI) for pose estimation. The ROI is calculated based on anthropometric proportions relative to the detected face dimensions.
@@ -274,7 +289,6 @@ The ROI calculation uses empirically determined scaling factors:
 \begin{itemize}
     \item Horizontal extent: 6x face width on each side of face center
     \item Vertical extent: From 40 pixels above face to bottom of frame
-    \item These proportions ensure the entire upper body and extended arms are captured
 \end{itemize}
 
 \subsection{Pose Estimation} \label{subsec:Pose Estimation}
@@ -293,12 +307,12 @@ The pose estimation process consists of the following stages:
     \item Scaling of the extracted coordinates back to the original image dimensions
 \end{enumerate}
 
-Due to the high computational cost of pose estimation, this process is executed only once every 10 frames, and the body keypoint positions are updated accordingly. This significantly improves runtime performance, as running OpenPose on every frame yields approximately 2 frames per second, in line with the performance expectations documented by OpenPose, \cref{fig:openpose run time} \cite{cao2019openposerealtimemultiperson2d}.
+Due to the high computational cost of pose estimation, this process is executed only once every 10 frames, and the body keypoint positions are updated accordingly. This significantly improves runtime performance, as running OpenPose on every frame yields approximately 2 frames per second, which is inline with the performance expectations documented by OpenPose, \cref{fig:openpose run time} \cite{cao2019openposerealtimemultiperson2d}.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.6\textwidth]{Images/openpose_vs_competition.png}
-    \caption{openpose run time}
+    \caption{OpenPose run time for multiple\\ models and numbers of people}
     \label{fig:openpose run time}
 \end{figure}
 
